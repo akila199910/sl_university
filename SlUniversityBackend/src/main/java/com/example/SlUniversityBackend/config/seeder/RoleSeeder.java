@@ -22,7 +22,6 @@ public class RoleSeeder {
     @Transactional
     void createRole(RoleRepository roles){
         for (String roleName : roleNames){
-            System.out.println(roleNames);
             if(!roles.existsByName(roleName)){
                 roles.save(new Role(roleName));
             }
