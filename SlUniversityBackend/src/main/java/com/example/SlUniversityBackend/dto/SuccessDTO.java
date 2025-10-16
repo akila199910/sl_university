@@ -8,4 +8,5 @@ import lombok.Data;
 public class SuccessDTO {
     private String message;
     private Boolean success = true;
+    private Object data;
 }

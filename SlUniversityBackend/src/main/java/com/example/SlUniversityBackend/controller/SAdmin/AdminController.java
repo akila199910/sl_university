@@ -21,7 +21,7 @@ public class AdminController {
     private AdminService adminService;
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDTO>> getUsers(){
+    public ResponseEntity<SuccessDTO> getUsers(){
         return ResponseEntity.ok(adminService.getUsers());
     }
 
@@ -31,7 +31,7 @@ public class AdminController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer id){
+    public ResponseEntity<SuccessDTO> getUserById(@PathVariable Integer id){
         return ResponseEntity.ok(adminService.getUserById(id));
     }
 

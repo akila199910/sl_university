@@ -31,14 +31,14 @@ public class AdminService {
     @Autowired
     private RoleRepository roleRepository;
 
-    public List<UserResponseDTO> getUsers(){
-        List<User> users = userRepository.findAllByRoleId(2);
+    public SuccessDTO getUsers(){
 
+        List<User> users = userRepository.findAllByRoleId(2);
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
 
 
-        users.forEach(u ->{
-            UserResponseDTO userDto = new  UserResponseDTO();
+        for (User u : users) {
+            UserResponseDTO userDto = new UserResponseDTO();
             userDto.setId(u.getId());
             userDto.setFirstName(u.getFirstName());
             userDto.setLastName(u.getLastName());
@@ -47,11 +47,10 @@ public class AdminService {
             userDto.setContactNumber(u.getContactNumber());
             userDto.setStatus(u.getStatus());
             userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
-            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
+            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(), u.getProfile().getProfileUrl(), u.getProfile().getCoverUrl()));
             userResponseDTOList.add(userDto);
-        });
-
-       return userResponseDTOList;
+        }
+        return new SuccessDTO("Admin list",true,userResponseDTOList);
     }
 
 
@@ -86,10 +85,11 @@ public class AdminService {
         user.setRole(roleRepository.findByName("admin"));
         user.setProfile(userProfile);
         userRepository.save(user);
-       return new SuccessDTO("Admin created success.",true);
+
+       return new SuccessDTO("Admin created success.",true, null);
     }
 
-    public UserResponseDTO getUserById(Integer id){
+    public SuccessDTO getUserById(Integer id){
 
         User u = userRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException(Map.of(
@@ -108,7 +108,7 @@ public class AdminService {
             userDto.setStatus(u.getStatus());
             userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
             userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
-            return userDto;
+            return new SuccessDTO("User fletch successfully", true, userDto);
     }
 
     public SuccessDTO updateAdmin(Integer id, AdminUpdateReqDTO adminUpdateReqDTO){
@@ -166,7 +166,7 @@ public class AdminService {
 
         userRepository.save(u);
 
-        return new SuccessDTO("Admin updated successfully.", true);
+        return new SuccessDTO("Admin updated successfully.", true, null);
     }
 
 
@@ -178,6 +178,6 @@ public class AdminService {
                         false)
                 );
         userRepository.delete(u);
-        return new SuccessDTO("Admin delete successfully.", true);
+        return new SuccessDTO("Admin delete successfully.", true, null);
     }
 }
