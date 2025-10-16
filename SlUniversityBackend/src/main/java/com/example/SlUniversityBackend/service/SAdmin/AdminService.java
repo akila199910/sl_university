@@ -168,4 +168,16 @@ public class AdminService {
 
         return new SuccessDTO("Admin updated successfully.", true);
     }
+
+
+    public SuccessDTO deleteAdmin(Integer id){
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+        userRepository.delete(u);
+        return new SuccessDTO("Admin delete successfully.", true);
+    }
 }

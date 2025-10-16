@@ -39,4 +39,9 @@ public class AdminController {
     public ResponseEntity<SuccessDTO> updateAdmin(@PathVariable Integer id, @Valid @RequestBody AdminUpdateReqDTO adminUpdateReqDTO){
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.updateAdmin(id, adminUpdateReqDTO));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<SuccessDTO> deleteAdmin(@PathVariable Integer id){
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(adminService.deleteAdmin(id));
+    }
 }
