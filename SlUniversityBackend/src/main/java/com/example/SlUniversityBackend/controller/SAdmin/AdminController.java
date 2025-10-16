@@ -6,6 +6,7 @@ import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.service.SAdmin.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,11 @@ public class AdminController {
 
     @PostMapping
     public ResponseEntity<SuccessDTO> createAdmin(@Valid @RequestBody AdminReqDTO adminReqDTO){
-        return ResponseEntity.ok(adminService.createAdmin(adminReqDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createAdmin(adminReqDTO));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer id){
+        return ResponseEntity.ok(adminService.getUserById(id));
     }
 }

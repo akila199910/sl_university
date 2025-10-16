@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.config.exception;
 
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
+import com.example.SlUniversityBackend.exception.NotFoundException;
 import com.example.SlUniversityBackend.exception.RequestValidationFailException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -44,5 +45,15 @@ public class GlobalExceptionHandler {
         body.put("errors", ex.getErrors());
         body.put("path",request.getRequestURI());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFound(NotFoundException ex, HttpServletRequest request){
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", ex.getSuccess());
+        body.put("message", ex.getMessage());
+        body.put("errors", ex.getErrors());
+        body.put("path",request.getRequestURI());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 }

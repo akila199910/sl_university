@@ -6,10 +6,12 @@ import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
+import com.example.SlUniversityBackend.exception.NotFoundException;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +48,7 @@ public class AdminService {
             userDto.setContactNumber(u.getContactNumber());
             userDto.setStatus(u.getStatus());
             userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
-            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
+            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
             userResponseDTOList.add(userDto);
         });
 
@@ -85,6 +87,28 @@ public class AdminService {
         user.setRole(roleRepository.findByName("admin"));
         user.setProfile(userProfile);
         userRepository.save(user);
-       return ResponseEntity.ok(new SuccessDTO("Admin created success.",true)).getBody();
+       return new SuccessDTO("Admin created success.",true);
+    }
+
+    public UserResponseDTO getUserById(Integer id){
+
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+
+            UserResponseDTO userDto = new  UserResponseDTO();
+            userDto.setId(u.getId());
+            userDto.setFirstName(u.getFirstName());
+            userDto.setLastName(u.getLastName());
+            userDto.setName(u.getName());
+            userDto.setEmail(u.getEmail());
+            userDto.setContactNumber(u.getContactNumber());
+            userDto.setStatus(u.getStatus());
+            userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
+            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
+            return userDto;
     }
 }

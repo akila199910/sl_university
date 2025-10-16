@@ -31,6 +31,7 @@ public class UserResponseDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ProfileDTO {
+        private Integer id;
         private String profileUrl;
         private String coverUrl;
     }
