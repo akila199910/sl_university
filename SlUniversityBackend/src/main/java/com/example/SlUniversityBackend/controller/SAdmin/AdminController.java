@@ -1,8 +1,7 @@
 package com.example.SlUniversityBackend.controller.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.AdminReqDTO;
-import com.example.SlUniversityBackend.dto.Admin.AdminResDTO;
-import com.example.SlUniversityBackend.entity.User;
+import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.service.SAdmin.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping
-    public ResponseEntity<AdminResDTO> createAdmin(@Valid @RequestBody AdminReqDTO adminReqDTO){
+    public ResponseEntity<SuccessDTO> createAdmin(@Valid @RequestBody AdminReqDTO adminReqDTO){
         return ResponseEntity.ok(adminService.createAdmin(adminReqDTO));
     }
 }

@@ -1,7 +1,7 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.AdminReqDTO;
-import com.example.SlUniversityBackend.dto.Admin.AdminResDTO;
+import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
@@ -11,7 +11,9 @@ import com.example.SlUniversityBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import static com.example.SlUniversityBackend.Enum.RoleName.admin;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AdminService {
@@ -25,13 +27,19 @@ public class AdminService {
     @Autowired
     private RoleRepository roleRepository;
 
-    public AdminResDTO createAdmin(AdminReqDTO adminReqDTO){
+    public SuccessDTO createAdmin(AdminReqDTO adminReqDTO){
+
+        Map<String, String> body = new HashMap<>();
 
         if(userRepository.existsByEmail(adminReqDTO.getEmail())){
-           throw new DuplicateFieldException("email","Email is already taken.");
+           body.put("email", "Email is already taken.");
         }
         if(userRepository.existsByContactNumber(adminReqDTO.getContactNumber())){
-            throw new DuplicateFieldException("contactNumber","Contact number is already taken.");
+            body.put("contactNumber", "Contact number is already taken.");
+        }
+
+        if (!body.isEmpty()){
+            throw new DuplicateFieldException(body,"Duplicated unique values",false);
         }
 
         UserProfile userProfile = new UserProfile();
@@ -50,6 +58,6 @@ public class AdminService {
         user.setRole(roleRepository.findByName("admin"));
         user.setProfile(userProfile);
         userRepository.save(user);
-       return ResponseEntity.ok(new AdminResDTO("Admin created success.",true)).getBody();
+       return ResponseEntity.ok(new SuccessDTO("Admin created success.",true)).getBody();
     }
 }
