@@ -10,5 +10,7 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
     boolean existsByContactNumber(String contactNumber);
+    boolean existsByEmailAndIdNot(String email, Integer id);
+    boolean existsByContactNumberAndIdNot(String contactNumber, Integer id);
     List<User> findAllByRoleId(Integer role);
 }

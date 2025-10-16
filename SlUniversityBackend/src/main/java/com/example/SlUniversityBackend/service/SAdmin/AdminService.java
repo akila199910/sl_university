@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.AdminReqDTO;
+import com.example.SlUniversityBackend.dto.Admin.AdminUpdateReqDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.entity.User;
@@ -11,8 +12,6 @@ import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -110,5 +109,63 @@ public class AdminService {
             userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
             userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
             return userDto;
+    }
+
+    public SuccessDTO updateAdmin(Integer id, AdminUpdateReqDTO adminUpdateReqDTO){
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+
+        Map<String, String> body = new HashMap<>();
+
+        if (adminUpdateReqDTO.getEmail() != null) {
+            boolean emailExists = userRepository.existsByEmailAndIdNot(adminUpdateReqDTO.getEmail(), id);
+            if (emailExists) {
+                body.put("email", "Email is already taken.");
+            }
+        }
+
+        if (adminUpdateReqDTO.getContactNumber() != null) {
+            boolean contactExists = userRepository.existsByContactNumberAndIdNot(adminUpdateReqDTO.getContactNumber(), id);
+            if (contactExists) {
+                body.put("contactNumber", "Contact number is already taken.");
+            }
+        }
+
+
+        if (!body.isEmpty()) {
+            throw new DuplicateFieldException(body, "Duplicated unique values", false);
+        }
+
+        if (adminUpdateReqDTO.getFirstName() != null) {
+            u.setFirstName(adminUpdateReqDTO.getFirstName());
+            u.setName(adminUpdateReqDTO.getFirstName() + " " +
+                    (adminUpdateReqDTO.getLastName() != null ? adminUpdateReqDTO.getLastName() : u.getLastName()));
+        }
+
+        if (adminUpdateReqDTO.getLastName() != null) {
+            u.setLastName(adminUpdateReqDTO.getLastName());
+            u.setName((adminUpdateReqDTO.getFirstName() != null ? adminUpdateReqDTO.getFirstName() : u.getFirstName())
+                    + " " + adminUpdateReqDTO.getLastName());
+        }
+
+        if (adminUpdateReqDTO.getEmail() != null) {
+            u.setEmail(adminUpdateReqDTO.getEmail());
+        }
+
+        if (adminUpdateReqDTO.getContactNumber() != null) {
+            u.setContactNumber(adminUpdateReqDTO.getContactNumber());
+        }
+
+        if (adminUpdateReqDTO.getStatus() != null) {
+            u.setStatus(adminUpdateReqDTO.getStatus());
+        }
+
+        userRepository.save(u);
+
+        return new SuccessDTO("Admin updated successfully.", true);
     }
 }

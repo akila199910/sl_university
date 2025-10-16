@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.controller.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.AdminReqDTO;
+import com.example.SlUniversityBackend.dto.Admin.AdminUpdateReqDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.service.SAdmin.AdminService;
@@ -32,5 +33,10 @@ public class AdminController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer id){
         return ResponseEntity.ok(adminService.getUserById(id));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<SuccessDTO> updateAdmin(@PathVariable Integer id, @Valid @RequestBody AdminUpdateReqDTO adminUpdateReqDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.updateAdmin(id, adminUpdateReqDTO));
     }
 }
