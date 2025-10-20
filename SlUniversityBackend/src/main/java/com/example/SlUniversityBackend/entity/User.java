@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+
 
 @Entity
 @Table(name = "users")
@@ -30,7 +30,7 @@ public class User {
     @Column(name = "contact_number", nullable = false, length = 15, unique = true)
     private String contactNumber;
 
-    @Column(name = "password", nullable = false, length = 25)
+    @Column(name = "password", nullable = false, length = 190)
     private String password;
 
     @Column(name = "status", nullable = true)
