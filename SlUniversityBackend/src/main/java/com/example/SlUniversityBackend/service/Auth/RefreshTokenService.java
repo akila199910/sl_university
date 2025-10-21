@@ -3,6 +3,7 @@ package com.example.SlUniversityBackend.service.Auth;
 import com.example.SlUniversityBackend.entity.RefreshToken;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.repository.RefreshTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class RefreshTokenService {
         this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenDurationMs = refreshTokenDurationMs;
     }
-
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
         // check if user already has a refresh token
         Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
@@ -50,6 +51,7 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token).orElse(null);
     }
 
+    @Transactional
     public void deleteByUser(User user) {
         refreshTokenRepository.deleteByUser(user);
     }

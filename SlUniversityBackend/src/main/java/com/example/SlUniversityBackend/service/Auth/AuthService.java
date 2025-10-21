@@ -9,23 +9,19 @@ import com.example.SlUniversityBackend.entity.RefreshToken;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
+import com.example.SlUniversityBackend.exception.NotFoundException;
+import com.example.SlUniversityBackend.exception.RequestValidationFailException;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +35,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
-    public final HttpServletResponse response;
-    private UserProfileRepository userProfileRepository;
+    private final HttpServletResponse response;
+    private final UserProfileRepository userProfileRepository;
 
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,
@@ -89,15 +85,31 @@ public class AuthService {
         user.setContactNumber(adminReqDTO.getContactNumber());
         user.setStatus(adminReqDTO.getStatus());
         user.setPassword(passwordEncoder.encode(adminReqDTO.getPassword()));
-        user.setRole(roleRepository.findByName("admin"));
+        user.setRole(roleRepository.findByName("user"));
         user.setProfile(userProfile);
         userRepository.save(user);
 
-        return new SuccessDTO("Admin created success.",true, null);
+        return new SuccessDTO("User register success.",true, null);
     }
 
 
-    public LoginResDTO login(LoginDTO authReq) {
+    public SuccessDTO login(LoginDTO authReq) {
+
+        User  searchUser = userRepository.findByEmail(authReq.getEmail()).orElseThrow(
+                ()-> new NotFoundException(Map.of(
+                        "email", "No user found "),
+                        "User not found.",
+                        false)
+        );
+
+
+        if (!passwordEncoder.matches(authReq.getPassword(), searchUser.getPassword())) {
+            throw new RequestValidationFailException(
+                    Map.of("password", "Invalid password."),
+                    "Invalid login credentials.",
+                    false
+            );
+        }
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authReq.getEmail(), authReq.getPassword())
         );
@@ -114,64 +126,79 @@ public class AuthService {
         cookie.setMaxAge((int)( (double) (rt.getExpiryDate().getEpochSecond() - Instant.now().getEpochSecond()) ));
         // cookie.setSecure(true); // enable in prod with HTTPS
 
-
         response.addCookie(cookie);
-        return new LoginResDTO(accessToken, "Bearer");
+
+         return new SuccessDTO("Login success", true, new LoginResDTO(accessToken, "Bearer"));
     }
 
-//    @PostMapping("/refresh")
-//    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-//        // read refresh token from cookie
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","No refresh token"));
-//
-//        String token = null;
-//        for (Cookie c : cookies) {
-//            if ("refreshToken".equals(c.getName())) {
-//                token = c.getValue();
-//            }
-//        }
-//        if (token == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","No refresh token"));
-//
-//        RefreshToken rt = refreshTokenService.findByToken(token);
-//        if (rt == null || refreshTokenService.isTokenExpired(rt)) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","Refresh token invalid or expired"));
-//        }
-//
-//        User user = rt.getUser();
-//        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", user.getRole() != null ? user.getRole().getName() : "USER"));
-//
-//        // optionally rotate refresh token: delete old and issue new one
-//        refreshTokenService.deleteByUser(user);
-//        RefreshToken newRt = refreshTokenService.createRefreshToken(user);
-//        Cookie cookie = new Cookie("refreshToken", newRt.getToken());
-//        cookie.setHttpOnly(true);
-//        cookie.setPath("/");
-//        cookie.setMaxAge((int)((newRt.getExpiryDate().getEpochSecond() - Instant.now().getEpochSecond())));
-//        // cookie.setSecure(true);
-//        response.addCookie(cookie);
-//
-//        return ResponseEntity.ok(new LoginResDTO(newAccessToken, "Bearer"));
-//    }
+    public SuccessDTO refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null){
+            throw new RequestValidationFailException(
+                    Map.of("refreshToken", "Refresh token not send"),
+                    "Authentication fail.",
+                    false
+            );
+        }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-//        // delete refresh token cookie and DB entry
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            for (Cookie c : cookies) {
-//                if ("refreshToken".equals(c.getName())) {
-//                    String token = c.getValue();
-//                    RefreshToken rt = refreshTokenService.findByToken(token);
-//                    if (rt != null) refreshTokenService.deleteByUser(rt.getUser());
-//                    // expire cookie
-//                    Cookie cookie = new Cookie("refreshToken", null);
-//                    cookie.setHttpOnly(true);
-//                    cookie.setPath("/");
-//                    cookie.setMaxAge(0);
-//                    response.addCookie(cookie);
-//                }
-//            }
-//        }
-//        return ResponseEntity.ok(Map.of("message","Logged out"));
+        String token = null;
+        for (Cookie c : cookies) {
+            if ("refreshToken".equals(c.getName())) {
+                token = c.getValue();
+            }
+        }
+        if (token == null) {
+            throw new RequestValidationFailException(
+                    Map.of("refreshToken", "Refresh token not send"),
+                    "Authentication fail.",
+                    false
+            );
+        }
+
+        RefreshToken rt = refreshTokenService.findByToken(token);
+        if (rt == null || refreshTokenService.isTokenExpired(rt)) {
+            throw new RequestValidationFailException(
+                    Map.of("refreshToken", "Refresh token not send"),
+                    "Authentication fail.",
+                    false
+            );
+        }
+
+        User user = rt.getUser();
+        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", user.getRole() != null ? user.getRole().getName() : "USER"));
+
+        // optionally rotate refresh token: delete old and issue new one
+        refreshTokenService.deleteByUser(user);
+        RefreshToken newRt = refreshTokenService.createRefreshToken(user);
+        Cookie cookie = new Cookie("refreshToken", newRt.getToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int)((newRt.getExpiryDate().getEpochSecond() - Instant.now().getEpochSecond())));
+        // cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        return new SuccessDTO("New access token.",true,newAccessToken);
+    }
+
+    public SuccessDTO logout(HttpServletRequest request, HttpServletResponse response){
+        // delete refresh token cookie and DB entry
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("refreshToken".equals(c.getName())) {
+                    String token = c.getValue();
+                    RefreshToken rt = refreshTokenService.findByToken(token);
+                    if (rt != null) refreshTokenService.deleteByUser(rt.getUser());
+                    // expire cookie
+                    Cookie cookie = new Cookie("refreshToken", null);
+                    cookie.setHttpOnly(true);
+                    cookie.setPath("/");
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+                }
+            }
+        }
+        return new SuccessDTO("Log out user.",true,null);
+    }
+
     }

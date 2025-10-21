@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +54,16 @@ public class GlobalExceptionHandler {
         body.put("success", ex.getSuccess());
         body.put("message", ex.getMessage());
         body.put("errors", ex.getErrors());
+        body.put("path",request.getRequestURI());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HttpClientErrorException.Forbidden.class)
+    public ResponseEntity<Object> handleForbidden(HttpClientErrorException ex, HttpServletRequest request){
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("message", ex.getMessage());
+        body.put("errors", ex.getMessage());
         body.put("path",request.getRequestURI());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
