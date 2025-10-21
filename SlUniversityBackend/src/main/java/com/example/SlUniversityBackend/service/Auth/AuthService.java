@@ -20,6 +20,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -117,7 +119,12 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(authReq.getEmail(), Map.of("roles", auth.getAuthorities()));
 
         // create refresh token and set httpOnly cookie
-        User user = userRepository.findByEmail(authReq.getEmail()).orElseThrow();
+        User user = userRepository.findByEmail(authReq.getEmail()).orElseThrow(
+                ()-> new NotFoundException(Map.of(
+                        "email", "No user found "),
+                        "User not found.",
+                        false)
+        );
         RefreshToken rt = refreshTokenService.createRefreshToken(user);
 
         Cookie cookie = new Cookie("refreshToken", rt.getToken());
@@ -201,4 +208,26 @@ public class AuthService {
         return new SuccessDTO("Log out user.",true,null);
     }
 
+    public SuccessDTO me() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Object> authUser = null;
+        if (authentication != null) {
+            String username = authentication.getName();
+
+            User user = userRepository.findByEmail(username).orElseThrow(
+                    () -> new NotFoundException(Map.of(
+                            "email", "No user found "),
+                            "User not found.",
+                            false)
+            );
+
+            authUser = new HashMap<>();
+            authUser.put("id", user.getId());
+            authUser.put("email", username);
+            authUser.put("role", user.getRole().getName());
+
+        }
+
+        return new SuccessDTO("User register success.", true, authUser);
     }
+}
