@@ -99,15 +99,15 @@ public class AuthService {
 
         User  searchUser = userRepository.findByEmail(authReq.getEmail()).orElseThrow(
                 ()-> new NotFoundException(Map.of(
-                        "email", "No user found "),
-                        "User not found.",
+                        "email", "Email is not found."),
+                        "Email not found.",
                         false)
         );
 
 
         if (!passwordEncoder.matches(authReq.getPassword(), searchUser.getPassword())) {
             throw new RequestValidationFailException(
-                    Map.of("password", "Invalid password."),
+                    Map.of("password", "Password is incorrect."),
                     "Invalid login credentials.",
                     false
             );
@@ -118,7 +118,6 @@ public class AuthService {
 
         String accessToken = jwtService.generateAccessToken(authReq.getEmail(), Map.of("roles", auth.getAuthorities()));
 
-        // create refresh token and set httpOnly cookie
         User user = userRepository.findByEmail(authReq.getEmail()).orElseThrow(
                 ()-> new NotFoundException(Map.of(
                         "email", "No user found "),
@@ -127,15 +126,12 @@ public class AuthService {
         );
         RefreshToken rt = refreshTokenService.createRefreshToken(user);
 
-        Cookie cookie = new Cookie("refreshToken", rt.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/"); // cookie valid for your domain
-        cookie.setMaxAge((int)( (double) (rt.getExpiryDate().getEpochSecond() - Instant.now().getEpochSecond()) ));
-        // cookie.setSecure(true); // enable in prod with HTTPS
+        Map<String, Object>  authUser = new HashMap<>();
+        authUser.put("id", user.getId());
+        authUser.put("email", user.getEmail());
+        authUser.put("role", user.getRole().getName());
 
-        response.addCookie(cookie);
-
-         return new SuccessDTO("Login success", true, new LoginResDTO(accessToken, "Bearer"));
+         return new SuccessDTO("Login success", true, new LoginResDTO(accessToken,rt.getToken(),authUser));
     }
 
     public SuccessDTO refreshToken(HttpServletRequest request, HttpServletResponse response) {

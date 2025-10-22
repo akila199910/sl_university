@@ -7,5 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResDTO {
     private String accessToken;
-    private String tokenType = "Bearer";
+    private String refreshToken;
+    private Object user;
 }
