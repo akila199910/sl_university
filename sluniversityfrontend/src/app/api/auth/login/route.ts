@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req : Request) {
 
+    try {
+        
+    } catch (error) {
+        
+    }
     const { email, password } = await req.json();
 
     const res = await fetch(`http://localhost:8080/api/auth/login`, {
@@ -13,6 +18,7 @@ export async function POST(req : Request) {
     });
 
     const data = await res.json();
+    console.log("Login Response Data:", data);
 
     if (!data.success || !res.ok) {
         return NextResponse.json( { success:data.success, errors: data.errors, message:data.message} , { status: res.status });
@@ -24,17 +30,18 @@ export async function POST(req : Request) {
         name: 'access_token',
         value: data.data.accessToken,
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 60 * 24 * 7 
+        // 1 hour default for access token in browser cookies (adjust as needed)
+        maxAge: 60 * 60
     });
 
     await cookieStore.set({
-        name: 'refresh_token',
+        name: 'refreshToken',
         value: data.data.refreshToken,
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
         maxAge: 60 * 60 * 24 * 7 * 4
