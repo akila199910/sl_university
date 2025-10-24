@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const Navbar = () => {
   return (
-    <div className='flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-12 py-4 bg-amber-50 shadow-md '>
+    <div className='flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-12 py-4 shadow-md z-99 '>
 
       {/* navbar logo and app name */}
         <div className='flex items-center gap-4'>

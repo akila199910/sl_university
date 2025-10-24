@@ -5,24 +5,23 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-amber-50">
         <div className="flex flex-col min-h-screen w-full">
 
-          <div className="w-full fixed z-999"><Navbar/></div>
+          <div className="w-full fixed z-999"><Navbar /></div>
 
-          {/* main section */}
-          <div className="h-full flex flex-grow relative top-18 ">
-
-            {/* sidebar section */}
-            <aside className=" bg-amber-500 shadow-md w-44 rounded-md fixed h-full px-4 py-6 overflow-y-auto">
-              <Sidebar/>
+          <div className="flex mt-20 h-[calc(100vh-5rem)] ">
+            {/* Sidebar */}
+            <aside className="shadow-md w-56  fixed top-20 left-0 h-[calc(100vh-5rem)] px-4 py-6 overflow-y-auto">
+              <Sidebar />
             </aside>
 
-            <main className="flex-1 ml-46  bg-blue-200 shadow-md rounded-md px-4 py-6">
+            {/* Main content */}
+            <main className=" flex-1 ml-56 shadow-md  px-4 py-6 overflow-y-auto">
               {children}
             </main>
-            
           </div>
+
           {/* {children} */}
           {/* <div className="">Footer</div> */}
         </div>

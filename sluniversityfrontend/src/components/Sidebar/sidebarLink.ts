@@ -5,7 +5,7 @@ const sidebarLinks = [
     { id: 4, name: 'Help', link: '/help', icon: 'HE' },
     { id: 5, name: 'About', link: '/about', icon: 'AB' },
     { id: 6, name: 'Logout', link: '/logout', icon: 'LO' },
-    { id: 15, name: 'Users', link: '/users', icon: 'US', multy: true,
+    { id: 15, name: 'Users', link: '/users', icon: 'US', multy: true, 
         subLinks: [
             { id: 1, name: 'Admins', link: '/admins', icon: 'AU' },
             { id: 2, name: 'Users', link: '/users', icon: 'Us' },
