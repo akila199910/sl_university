@@ -3,11 +3,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req : Request) {
 
-    try {
-        
-    } catch (error) {
-        
-    }
     const { email, password } = await req.json();
 
     const res = await fetch(`http://localhost:8080/api/auth/login`, {
@@ -18,7 +13,6 @@ export async function POST(req : Request) {
     });
 
     const data = await res.json();
-    console.log("Login Response Data:", data);
 
     if (!data.success || !res.ok) {
         return NextResponse.json( { success:data.success, errors: data.errors, message:data.message} , { status: res.status });
