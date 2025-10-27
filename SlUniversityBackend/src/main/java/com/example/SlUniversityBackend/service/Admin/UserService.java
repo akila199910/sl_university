@@ -10,6 +10,7 @@ import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -30,19 +31,17 @@ public class UserService {
     @Autowired
     private RoleRepository roleRepository;
 
-    public SuccessDTO getUsers(Pageable pageable,String search){
+    public Page<UserResponseDTO> getUsers(Pageable pageable, String search) {
 
-        List<User> users;
+        Page<User> userPage; // Use Page<User>
 
-        if(search != null){
-             users = userRepository.findByName(search,pageable).getContent();
-        }else {
-             users = userRepository.findAll(pageable).getContent();
+        if (search != null && !search.trim().isEmpty()) {
+            userPage = userRepository.findByNameContainingIgnoreCase(search, pageable);
+        } else {
+            userPage = userRepository.findAll(pageable);
         }
-        List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
 
-
-        for (User u : users) {
+        Page<UserResponseDTO> userResponseDTOPage = userPage.map(u -> {
             UserResponseDTO userDto = new UserResponseDTO();
             userDto.setId(u.getId());
             userDto.setFirstName(u.getFirstName());
@@ -51,13 +50,22 @@ public class UserService {
             userDto.setEmail(u.getEmail());
             userDto.setContactNumber(u.getContactNumber());
             userDto.setStatus(u.getStatus());
-            userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
-            userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(), u.getProfile().getProfileUrl(), u.getProfile().getCoverUrl()));
-            userResponseDTOList.add(userDto);
-        }
-        return new SuccessDTO("Users list",true,userResponseDTOList);
-    }
+            if (u.getRole() != null) {
+                userDto.setRole(new UserResponseDTO.RoleDTO(u.getRole().getId(), u.getRole().getName()));
+            } else {
+                userDto.setRole(null);
+            }
+            if (u.getProfile() != null) {
+                userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(), u.getProfile().getProfileUrl(), u.getProfile().getCoverUrl()));
+            } else {
+                userDto.setProfile(null);
+            }
+            return userDto;
+        });
 
+        return userResponseDTOPage;
+
+    }
     public SuccessDTO createUser(UserCreateReqDTO userCreateReqDTO){
         Map<String, String> body = new HashMap<>();
 
