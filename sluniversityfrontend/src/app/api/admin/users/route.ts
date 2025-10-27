@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('access_token')?.value;
 
-    const backendUrl = `http://localhost:8080/api/admins${qs}`;
+    const backendUrl = `http://localhost:8080/api/users${qs}`;
 
     const res = await fetch(backendUrl, {
       method: 'GET',
@@ -23,8 +23,9 @@ export async function GET(req: Request) {
 
     const data = await res.json();
 
+
     if (!data.success || !res.ok) {
-        return NextResponse.json( { success:data.success, errors: data.errors, message:data.message} , { status: res.status });
+        return NextResponse.json( data , { status: res.status });
     }
 
     return NextResponse.json({ success:data.success, data: data.data, message:data.message}, { status: res.status });
