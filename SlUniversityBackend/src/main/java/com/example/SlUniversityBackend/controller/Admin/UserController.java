@@ -17,8 +17,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDTO>> getUsers(@RequestParam(required = false, defaultValue = "0") int pageNo,
-                                                          @RequestParam(required = false, defaultValue = "10") int pageSize,
+    public ResponseEntity<Page<UserResponseDTO>> getUsers(@RequestParam(required = false, defaultValue = "0") int page,
+                                                          @RequestParam(required = false, defaultValue = "10") int size,
                                                           @RequestParam(required = false, defaultValue = "id") String sortBy,
                                                           @RequestParam(required = false, defaultValue = "ASC") String sortDir,
                                                           @RequestParam(required = false) String search) {
@@ -29,7 +29,7 @@ public class UserController {
             sort = Sort.by(sortBy).descending();
         }
 
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         // Call the service which now returns a Page
         Page<UserResponseDTO> userPage = userService.getUsers(pageable, search);
