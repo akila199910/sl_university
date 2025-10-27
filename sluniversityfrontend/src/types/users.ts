@@ -14,4 +14,7 @@ export type User =
             profileUrl:string;
             coverUrl:string
         },
+        editUrl:string | null;
+        viewUrl:string | null;
+        deleteUrl:string | null
     };

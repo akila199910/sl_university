@@ -109,6 +109,7 @@ const UsersPage = () => {
                                     <th className='border border-gray-300 px-4 py-2'>Role</th>
                                     <th className='border border-gray-300 px-4 py-2'>Contact</th>
                                     <th className='border border-gray-300 px-4 py-2'>Status</th>
+                                    <th className='border border-gray-300 px-4 py-2'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -136,6 +137,36 @@ const UsersPage = () => {
                                                 ) : (
                                                     <span className='text-gray-600'>Inactive</span>
                                                 )}
+                                            </td>
+                                            <td className='border border-gray-300 px-4 py-2'>
+                                                {u.viewUrl != null && (
+                                                    <button
+                                                        className='px-2 py-1 bg-green-500 text-white rounded mr-2 hover:bg-green-600'
+                                                        onClick={() => alert(`Edit user ${u.id}`)}
+                                                    >
+                                                        View
+                                                    </button>
+                                                )}
+                                                
+                                                {u.editUrl != null && (
+                                                    <button
+                                                        className='px-2 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600'
+                                                        onClick={() => alert(`Edit user ${u.id}`)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+
+                                                {u.deleteUrl != null && (
+                                                    <button
+                                                    className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
+                                                    onClick={() => alert(`Delete user ${u.id}`)}
+                                                >
+                                                    Delete
+                                                </button>
+                                                )}
+                                                
+                                                
                                             </td>
                                         </tr>
                                     ))

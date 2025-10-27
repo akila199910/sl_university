@@ -10,17 +10,24 @@ import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 public class UserService {
+
+    @Value("${app.api.base-url}")
+    private String apiBaseUrl;
 
     @Autowired
     private UserRepository userRepository;
@@ -41,6 +48,21 @@ public class UserService {
             userPage = userRepository.findAll(pageable);
         }
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean canSeeUrls = false;
+        if (authentication != null && authentication.isAuthenticated()) {
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            for (GrantedAuthority authority : authorities) {
+                String role = authority.getAuthority();
+
+                if ("super_admin".equals(role) || "admin".equals(role)) {
+                    canSeeUrls = true;
+                    break;
+                }
+            }
+        }
+
+        boolean finalCanSeeUrls = canSeeUrls;
         Page<UserResponseDTO> userResponseDTOPage = userPage.map(u -> {
             UserResponseDTO userDto = new UserResponseDTO();
             userDto.setId(u.getId());
@@ -60,6 +82,14 @@ public class UserService {
             } else {
                 userDto.setProfile(null);
             }
+
+            if(finalCanSeeUrls){
+                String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(String.valueOf(u.getId()).getBytes());
+                userDto.setViewUrl(apiBaseUrl + "/users/" + encodedId);
+                userDto.setEditUrl(apiBaseUrl + "/users/" + encodedId);
+                userDto.setDeleteUrl(apiBaseUrl + "/users/" + encodedId);
+            }
+
             return userDto;
         });
 

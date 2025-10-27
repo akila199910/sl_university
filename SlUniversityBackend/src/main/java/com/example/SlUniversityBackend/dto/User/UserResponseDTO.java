@@ -16,6 +16,9 @@ public class UserResponseDTO {
     private Boolean status;
     private RoleDTO role;
     private ProfileDTO profile;
+    private String editUrl;
+    private String viewUrl;
+    private String deleteUrl;
 
     @Data
     @AllArgsConstructor
