@@ -2,21 +2,31 @@
 import React, { useEffect, useState } from 'react'
 import { type User } from '@/types/users'
 
-type PaginatedResponse = {
-    content: User[];
-    totalPages: number;
-    totalElements: number;
-    number: number;
-    size: number;
+type Role = {
+    id:number,
+    name:string
+}
+
+type UsersResponse = {
+    userPage:{
+            content: User[];
+            totalPages: number;
+            totalElements: number;
+            number: number;
+            size: number;
+    },
+    availableRoles:Role[] 
 }
 
 const UsersPage = () => {
     const [users, setUsers] = useState<User[]>([]);
+    const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const [page, setPage] = useState<number>(0);
     const [size, setSize] = useState<number>(10);
+    const [role, setRole] = useState<number | ''>('')
     const [totalPages, setTotalPages] = useState<number>(0);
     const [totalElements, setTotalElements] = useState<number>(0);
 
@@ -27,7 +37,8 @@ const UsersPage = () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`/api/admin/users?page=${page}&size=${size}`, {
+                console.log(`Fetching users with role: ${role}`);
+                const res = await fetch(`/api/admin/users?page=${page}&size=${size}&role=${role}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin'
@@ -38,13 +49,15 @@ const UsersPage = () => {
                     return;
                 }
 
-                const data: PaginatedResponse = await res.json().catch(() => ({} as PaginatedResponse));
-                const list = Array.isArray(data?.content) ? data.content : [];
+                const data: UsersResponse = await res.json().catch(() => ({} as UsersResponse));
+                const list = Array.isArray(data?.userPage.content) ? data.userPage.content : [];
 
                 if (mounted) {
                     setUsers(list);
-                    setTotalPages(data.totalPages || 0);
-                    setTotalElements(data.totalElements || 0);
+                    setTotalPages(data.userPage.totalPages || 0);
+                    setTotalElements(data.userPage.totalElements || 0);
+                    setAvailableRoles(data.availableRoles)
+                    console.log('Available Roles:', data.availableRoles);
                 }
             } catch (err: any) {
                 console.error('Failed to load users', err);
@@ -56,7 +69,7 @@ const UsersPage = () => {
 
         load();
         return () => { mounted = false };
-    }, [page, size]);
+    }, [page, size, role]);
 
     function gotoPage(n: number) {
         if (n < 0 || n >= totalPages) return;
@@ -106,7 +119,23 @@ const UsersPage = () => {
                                     <th className='border border-gray-300 px-4 py-2'>#</th>
                                     <th className='border border-gray-300 px-4 py-2'>Name</th>
                                     <th className='border border-gray-300 px-4 py-2'>Email</th>
-                                    <th className='border border-gray-300 px-4 py-2'>Role</th>
+                                    <th className='border border-gray-300 px-4 py-2'>
+                                        <select 
+                                            value={role}
+                                            onChange={(e) => setRole(e.target.value ? Number(e.target.value) : '')}
+                                            className="w-full p-1 rounded border border-gray-300"
+                                        >
+                                            <option value="">All Roles</option>
+                                            {availableRoles.map((r) => (
+                                                <option 
+                                                    key={r.id}
+                                                    value={r.id}
+                                                >
+                                                    {r.name}
+                                                </option>
+                                            ))}                                            
+                                        </select>
+                                    </th>
                                     <th className='border border-gray-300 px-4 py-2'>Contact</th>
                                     <th className='border border-gray-300 px-4 py-2'>Status</th>
                                     <th className='border border-gray-300 px-4 py-2'>Action</th>

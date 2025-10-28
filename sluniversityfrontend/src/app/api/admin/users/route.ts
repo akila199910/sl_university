@@ -28,7 +28,7 @@ export async function GET(req: Request) {
         return NextResponse.json( data , { status: res.status });
     }
 
-    return NextResponse.json({ success:data.success, data: data.data, message:data.message}, { status: res.status });
+    return NextResponse.json({  data: data.data , message:data.message}, { status: res.status });
 
   } catch (err) {
     console.error('Error in /api/admin/users proxy:', err);

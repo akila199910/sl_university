@@ -1,11 +1,14 @@
 package com.example.SlUniversityBackend.service.Admin;
 
 import com.example.SlUniversityBackend.dto.Admin.UserCreateReqDTO;
+import com.example.SlUniversityBackend.dto.Admin.users.UserPageWithRolesDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
+import com.example.SlUniversityBackend.entity.Role;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
+import com.example.SlUniversityBackend.exception.NotFoundException;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
@@ -18,10 +21,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -38,24 +38,44 @@ public class UserService {
     @Autowired
     private RoleRepository roleRepository;
 
-    public Page<UserResponseDTO> getUsers(Pageable pageable, String search) {
+    public UserPageWithRolesDTO getUsers(Pageable pageable, String search, String roleId) {
 
-        Page<User> userPage; // Use Page<User>
+        Page<User> userPage;
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasRoleId = roleId != null && !roleId.trim().isEmpty();
+        Map<String,String> errors = new HashMap<>();
+        Role role = null;
+        if(hasRoleId){
+             role = roleRepository.findById(Integer.parseInt(roleId)).orElseThrow(()-> new NotFoundException(Map.of(
+                    "roleId", "No role found with ID " + roleId),
+                    "Role not found.",
+                    false)
+            );
+        }
 
-        if (search != null && !search.trim().isEmpty()) {
+
+        if (hasSearch && hasRoleId) {
+            userPage = userRepository.findByNameContainingIgnoreCaseAndRoleId(search, role, pageable);
+        } else if (hasSearch) {
             userPage = userRepository.findByNameContainingIgnoreCase(search, pageable);
+        } else if (hasRoleId) {
+            userPage = userRepository.findByRole(role, pageable);
         } else {
+            // NO filter (fetch all, paginated)
             userPage = userRepository.findAll(pageable);
         }
+
+        // get the available roles from role table
+        List<Role> availableRoles = roleRepository.findAll();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean canSeeUrls = false;
         if (authentication != null && authentication.isAuthenticated()) {
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
-                String role = authority.getAuthority();
+                String authUserRoles = authority.getAuthority();
 
-                if ("super_admin".equals(role) || "admin".equals(role)) {
+                if ("SUPER ADMIN".equals(authUserRoles) || "ADMIN".equals(authUserRoles)) {
                     canSeeUrls = true;
                     break;
                 }
@@ -93,7 +113,8 @@ public class UserService {
             return userDto;
         });
 
-        return userResponseDTOPage;
+
+        return new UserPageWithRolesDTO(userResponseDTOPage,availableRoles);
 
     }
     public SuccessDTO createUser(UserCreateReqDTO userCreateReqDTO){

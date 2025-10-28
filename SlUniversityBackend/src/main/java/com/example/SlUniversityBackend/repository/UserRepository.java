@@ -1,5 +1,6 @@
 package com.example.SlUniversityBackend.repository;
 
+import com.example.SlUniversityBackend.entity.Role;
 import com.example.SlUniversityBackend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Page<User> findByName(String name, Pageable pageable);
 
     Page<User> findByNameContainingIgnoreCase(String search, Pageable pageable);
+
+    Page<User> findByNameContainingIgnoreCaseAndRoleId(String search, Role roleId, Pageable pageable);
+
+    Page<User> findByRole(Role roleId, Pageable pageable);
 }
