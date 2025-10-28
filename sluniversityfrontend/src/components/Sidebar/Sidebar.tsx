@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import React, { MouseEventHandler, useState } from 'react'
+import React, { useState } from 'react'
 import sidebarLinks from './sidebarLink'
 import up from './icons/chevron-up.svg'
 import Image from 'next/image'
@@ -29,12 +29,12 @@ const Sidebar = () => {
                 <div className='flex items-center cursor-pointer
                    rounded-md mb-2 hover:bg-gray-400 p-2 '>
 
-                  <div className='flex items-center w-full justify-between '>
+                  <div className='flex items-center w-full justify-between' onClick={(e) => { handleShow(e, sidebarLink.id) }}>
                     <div className='flex gap-2'>
-                      <div className='text-start'>{sidebarLink.icon}</div>
+                      <Image src={sidebarLink.icon} alt={sidebarLink.name} className='w-5'/>
                       <div className='text-start'>{sidebarLink.name}</div>
                     </div>
-                    <div className='flex' onClick={(e) => { handleShow(e, sidebarLink.id) }}>
+                    <div className='flex'>
                       <Image src={up} alt='up' className='w-5 relative top-1'/>
                     </div>
                   </div>
@@ -48,7 +48,7 @@ const Sidebar = () => {
                         }`}>
                         <Link key={subLink.id} className='flex items-center gap-2 cursor-pointer
                         p-2 ml-4' href={subLink.link}>
-                          <div className='text-start'>{subLink.icon}</div>
+                          <Image src={subLink.icon} alt={subLink.name} className='w-5'/>
                           <div className='text-start'>{subLink.name}</div>
                         </Link>
                       </div>
@@ -64,7 +64,7 @@ const Sidebar = () => {
             return (
               <Link key={sidebarLink.id} className='flex items-center gap-2 cursor-pointer
                mb-2 hover:bg-gray-400 p-2 rounded-md' href={sidebarLink.link}>
-                <div className='text-start'>{sidebarLink.icon}</div>
+                <Image src={sidebarLink.icon} alt={sidebarLink.name} className='w-5'/>
                 <div className='text-start'>{sidebarLink.name}</div>
               </Link>
             );
