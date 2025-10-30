@@ -7,22 +7,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
     boolean existsByContactNumber(String contactNumber);
-    boolean existsByEmailAndIdNot(String email, Integer id);
-    boolean existsByContactNumberAndIdNot(String contactNumber, Integer id);
-    List<User> findAllByRoleId(Integer role);
+//    boolean existsByEmailAndIdNot(String email, Integer id);
+//    boolean existsByContactNumberAndIdNot(String contactNumber, Integer id);
+
     Optional<User> findByEmail(String email);
-    Page<User> findByName(String name, Pageable pageable);
-
-    Page<User> findByNameContainingIgnoreCase(String search, Pageable pageable);
-
-    Page<User> findByNameContainingIgnoreCaseAndRoleId(String search, Role roleId, Pageable pageable);
-
-    Page<User> findByRole(Role roleId, Pageable pageable);
+    Page<User> findByNameContainingIgnoreCaseAndRolesNotContaining(String search, Role name, Pageable pageable);
+    Page<User> findByNameContainingIgnoreCaseAndRolesNotContaining(String search, Optional<Role> role, Role name, Pageable pageable);
+    Page<User> findByRolesNotContaining(Role byName,  Pageable pageable);
+    Page<User> findByRoles(Optional<Role> byName, Pageable pageable);
 }

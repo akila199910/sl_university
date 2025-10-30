@@ -1,18 +1,20 @@
 package com.example.SlUniversityBackend.dto.Admin.users;
 
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
-import com.example.SlUniversityBackend.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserPageWithRolesDTO {
-    private Page<UserResponseDTO> userPage;
-    private List<Role> availableRoles;
+public class SystemUserPageDTO {
+
+    private PagedModel<EntityModel<UserResponseDTO>> userPage;
+    private List<UserResponseDTO.RoleDTO> availableRoles;
+
 }

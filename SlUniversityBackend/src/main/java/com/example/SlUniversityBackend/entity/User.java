@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
@@ -36,9 +38,15 @@ public class User {
     @Column(name = "status", nullable = true)
     private Boolean status;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER) // EAGER is often needed for security
+    @JoinTable(
+            name = "user_roles", // Name of the intermediate table
+            joinColumns = @JoinColumn(name = "user_id"), // Foreign key column for User in the join table
+            inverseJoinColumns = @JoinColumn(name = "role_id") // Foreign key column for Role in the join table
+    )
+    private Set<Role> roles = new HashSet<>(); // Use Set for ManyToMany
+    // --- End Relationship ---
+
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_id", referencedColumnName = "id", nullable = true)

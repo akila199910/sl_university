@@ -1,5 +1,6 @@
 package com.example.SlUniversityBackend.dto.User;
 
+import com.example.SlUniversityBackend.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,19 +17,11 @@ public class UserResponseDTO {
     private String email;
     private String contactNumber;
     private Boolean status;
-    private RoleDTO role;
     private ProfileDTO profile;
     private String editUrl;
     private String viewUrl;
     private String deleteUrl;
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class RoleDTO {
-        private Integer id;
-        private String name;
-    }
+    private List<RoleDTO> roles;
 
     @Data
     @AllArgsConstructor
@@ -37,5 +30,13 @@ public class UserResponseDTO {
         private Integer id;
         private String profileUrl;
         private String coverUrl;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RoleDTO {
+        private Integer id;
+        private String name;
     }
 }

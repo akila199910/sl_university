@@ -52,8 +52,21 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admins/**").hasAuthority("super_admin")
-                        .anyRequest().permitAll())
+
+//                        .requestMatchers("/api/roles/**").hasRole("ROLE_SUPER_ADMIN")
+//                        .requestMatchers("/api/permissions/**").hasRole("ROLE_SUPER_ADMIN")
+//                        .requestMatchers("/api/admins/**").hasRole("ROLE_SUPER_ADMIN")
+//                        .anyRequest().permitAll()
+
+//                          Secure admin management endpoints - Require SUPER_ADMIN role
+                          .requestMatchers("/api/roles/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here
+                          .requestMatchers("/api/permissions/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here
+                          .requestMatchers("/api/admins/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here (assuming this controls user/admin management)
+
+                        // Example: If you have general user endpoints accessible by admins or based on permissions
+                        // .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN") // Allow ADMIN or SUPER_ADMIN to read users
+                        // .requestMatchers(HttpMethod.GET, "/api/users/profile").authenticated() // Allow any logged-in user to see their profile
+                )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)

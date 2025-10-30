@@ -1,11 +1,13 @@
 package com.example.SlUniversityBackend.service.Auth;
 
 import com.example.SlUniversityBackend.JWT.JwtService;
+import com.example.SlUniversityBackend.config.security.Roles;
 import com.example.SlUniversityBackend.dto.Auth.LoginDTO;
 import com.example.SlUniversityBackend.dto.Auth.LoginResDTO;
 import com.example.SlUniversityBackend.dto.Auth.RegisterReqDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.entity.RefreshToken;
+import com.example.SlUniversityBackend.entity.Role;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
@@ -21,12 +23,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -87,7 +90,9 @@ public class AuthService {
         user.setContactNumber(adminReqDTO.getContactNumber());
         user.setStatus(adminReqDTO.getStatus());
         user.setPassword(passwordEncoder.encode(adminReqDTO.getPassword()));
-        user.setRole(roleRepository.findByName("user"));
+        Set<Role> roles = new HashSet<>();
+        roles.add(roleRepository.findByName(Roles.ROLE_ADMIN));
+        user.setRoles(roles);
         user.setProfile(userProfile);
         userRepository.save(user);
 
@@ -126,12 +131,13 @@ public class AuthService {
         );
         RefreshToken rt = refreshTokenService.createRefreshToken(user);
 
-        Map<String, Object>  authUser = new HashMap<>();
-        authUser.put("id", user.getId());
-        authUser.put("email", user.getEmail());
-        authUser.put("role", user.getRole().getName());
+        Map<String, Object>  loginData = new HashMap<>();
+        loginData.put("id", user.getId());
+        loginData.put("email", user.getEmail());
+        loginData.put("refreshToken", rt.getToken());
+        loginData.put("accessToken", accessToken);
 
-         return new SuccessDTO("Login success", true, new LoginResDTO(accessToken,rt.getToken(),authUser));
+         return new SuccessDTO("Login success", true,loginData);
     }
 
     public SuccessDTO refreshToken(HttpServletRequest request, HttpServletResponse response) {
@@ -168,7 +174,7 @@ public class AuthService {
         }
 
         User user = rt.getUser();
-        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", user.getRole() != null ? user.getRole().getName() : "USER"));
+        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", user.getRoles() != null ? user.getRoles() : "USER"));
 
         // optionally rotate refresh token: delete old and issue new one
         refreshTokenService.deleteByUser(user);
@@ -220,7 +226,7 @@ public class AuthService {
             authUser = new HashMap<>();
             authUser.put("id", user.getId());
             authUser.put("email", username);
-            authUser.put("role", user.getRole().getName());
+            authUser.put("role", user.getRoles());
 
         }
 
