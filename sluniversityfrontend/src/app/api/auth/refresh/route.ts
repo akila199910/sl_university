@@ -10,7 +10,8 @@ export async function GET(req:any) {
     console.log('Refresh token from cookie:', refreshToken);
 
     if(!refreshToken){
-        return NextResponse.redirect(new URL('/login'));
+        // include base so URL is valid and serializes correctly
+        return NextResponse.redirect(new URL('/login', req.url).toString());
     }
 
     // Send both possible property names to accommodate backend expectations
@@ -44,7 +45,7 @@ export async function GET(req:any) {
     console.log('Refresh response status:', res.status);
     console.log('Refresh response data:', data);
     if (!data.success || !res.ok) {
-        const redirectUrl = NextResponse.redirect(new URL('/login', req.url));
+    const redirectUrl = NextResponse.redirect(new URL('/login', req.url).toString());
         // clear cookies on failed refresh
         redirectUrl.cookies.set('access_token', '', { maxAge: 0, path: '/' });
     redirectUrl.cookies.set('refreshToken', '', { maxAge: 0, path: '/' });
@@ -52,7 +53,7 @@ export async function GET(req:any) {
         return redirectUrl;
     }
 
-    const redirectUrl = NextResponse.redirect(new URL(next, req.url));
+    const redirectUrl = NextResponse.redirect(new URL(next, req.url).toString());
 
     // set refreshed access token on the response
     redirectUrl.cookies.set('access_token', data.data, {

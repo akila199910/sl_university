@@ -3,35 +3,58 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   try {
-
     const url = new URL(req.url);
     const qs = url.search ? url.search : '';
 
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('access_token')?.value;
 
-    const backendUrl = `http://localhost:8080/api/users${qs}`;
+    if (!accessToken) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/system_users${qs}`;
 
     const res = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        'Authorization': `Bearer ${accessToken}`,
       },
       cache: 'no-store',
     });
 
     const data = await res.json();
 
-
-    if (!data.success || !res.ok) {
-        return NextResponse.json( data , { status: res.status });
+    if (!res.ok) {
+      return NextResponse.json({ 
+        success: false, 
+        message: data.message || 'Backend error',
+        errors: data.errors 
+      }, { 
+        status: res.status 
+      });
     }
 
-    return NextResponse.json({  data: data.data , message:data.message}, { status: res.status });
+    return NextResponse.json({ 
+      success: data.success,
+      userPage: data?.data.userPage,
+      availableRoles: data.data.availableRoles,
+      message: data.message || 'Users fetched successfully'
+    }, { 
+      status: res.status,
+      headers: {
+        'Cache-Control': 'no-store'
+      }
+    });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error in /api/admin/users proxy:', err);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Internal server error' 
+    }, { 
+      status: 500 
+    });
   }
 }

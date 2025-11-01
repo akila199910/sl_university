@@ -10,6 +10,12 @@ type Role = {
 type UsersResponse = {
     userPage:{
             content: User[];
+            page:{
+                number: number;
+                size: number;
+                totalElements: number;
+                totalPages: number;
+            }
             totalPages: number;
             totalElements: number;
             number: number;
@@ -37,7 +43,6 @@ const UsersPage = () => {
             setLoading(true);
             setError(null);
             try {
-                console.log(`Fetching users with role: ${role}`);
                 const res = await fetch(`/api/admin/users?page=${page}&size=${size}&role=${role}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
@@ -49,15 +54,17 @@ const UsersPage = () => {
                     return;
                 }
 
-                const data: UsersResponse = await res.json().catch(() => ({} as UsersResponse));
+                const data = await res.json().catch(() => ({} as UsersResponse));
+
                 const list = Array.isArray(data?.userPage.content) ? data.userPage.content : [];
+            
 
                 if (mounted) {
                     setUsers(list);
-                    setTotalPages(data.userPage.totalPages || 0);
-                    setTotalElements(data.userPage.totalElements || 0);
+                    setTotalPages(data?.userPage?.page?.totalPages || 0);
+                    setTotalElements(data.userPage?.page?.totalElements || 0);
                     setAvailableRoles(data.availableRoles)
-                    console.log('Available Roles:', data.availableRoles);
+                    console.log('Available Roles:', data);
                 }
             } catch (err: any) {
                 console.error('Failed to load users', err);
@@ -158,7 +165,7 @@ const UsersPage = () => {
                                                 </div>
                                             </td>
                                             <td className='border border-gray-300 px-4 py-2'>{u.email}</td>
-                                            <td className='border border-gray-300 px-4 py-2'>{(u as any).role?.name ?? (u as any).role ?? '-'}</td>
+                                            <td className='border border-gray-300 px-4 py-2'>{u.roles.map((r)=>r.name)}</td>
                                             <td className='border border-gray-300 px-4 py-2'>{u.contactNumber}</td>
                                             <td className='border border-gray-300 px-4 py-2'>
                                                 {u.status ? (

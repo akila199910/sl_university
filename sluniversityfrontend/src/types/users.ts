@@ -3,10 +3,10 @@ export type User =
         id: number; 
         email: string;
         name : string, 
-        role: {
+        roles: [{
             id:number,
             name:string
-        },
+        }],
         contactNumber: string,
         status : boolean,
         profile:{
