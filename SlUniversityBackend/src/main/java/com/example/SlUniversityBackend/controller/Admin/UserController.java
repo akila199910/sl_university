@@ -1,19 +1,38 @@
-//package com.example.SlUniversityBackend.controller.Admin;
-//
-//import com.example.SlUniversityBackend.dto.Admin.users.UserPageWithRolesDTO;
-//import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
-//import com.example.SlUniversityBackend.service.Admin.UserService;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.data.domain.Page;
-//import org.springframework.data.domain.PageRequest;
-//import org.springframework.data.domain.Pageable;
-//import org.springframework.data.domain.Sort;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//@RestController
-//@RequestMapping("/api/users")
-//public class UserController {
+package com.example.SlUniversityBackend.controller.Admin;
+
+import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @PreAuthorize("hasAuthority('USER_READ')")
+    @GetMapping("/admins")
+    public String test() {
+        return "Access granted: USER_READ permission found";
+    }
+
+    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    @GetMapping("/admin-only")
+    public String adminTest() {
+        return "Access granted: SUPER_ADMIN role found";
+    }
+
+    @GetMapping("/debug-auth")
+    public ResponseEntity<?> debugAuth(Authentication authentication) {
+        return ResponseEntity.ok(authentication.getAuthorities());
+    }
+
+
 //    @Autowired
 //    private UserService userService;
 //
@@ -38,4 +57,4 @@
 //        return ResponseEntity.ok(userPage);
 //
 //    }
-//}
+}

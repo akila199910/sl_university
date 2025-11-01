@@ -1,8 +1,8 @@
 package com.example.SlUniversityBackend.controller.SAdmin;
 
-import com.example.SlUniversityBackend.dto.Admin.users.AdminReqDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserCreateDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
-import com.example.SlUniversityBackend.service.SAdmin.AdminService;
+import com.example.SlUniversityBackend.service.SAdmin.SystemUserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,11 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admins")
-public class AdminController {
+@RequestMapping("/api/system_users")
+public class SystemUserController {
 
     @Autowired
-    private AdminService adminService;
+    private SystemUserService systemUserService;
 
     @GetMapping
     public ResponseEntity<SuccessDTO> getSystemUsers(@RequestParam(required = false, defaultValue = "0") int page,
@@ -36,17 +36,17 @@ public class AdminController {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        return ResponseEntity.ok(adminService.getSystemUsers(pageable,search, role));
+        return ResponseEntity.ok(systemUserService.getSystemUsers(pageable,search, role));
     }
 
     @PostMapping
-    public ResponseEntity<SuccessDTO> createSystemUser(@Valid @RequestBody AdminReqDTO adminReqDTO){
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createSystemUser(adminReqDTO));
+    public ResponseEntity<SuccessDTO> createSystemUser(@Valid @RequestBody SystemUserCreateDTO systemUserCreateDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(systemUserService.createSystemUser(systemUserCreateDTO));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SuccessDTO> getSystemUserById(@PathVariable Integer id){
-        return ResponseEntity.ok(adminService.getSystemUserById(id));
+        return ResponseEntity.ok(systemUserService.getSystemUserById(id));
     }
 
 //    @PatchMapping("/{id}")

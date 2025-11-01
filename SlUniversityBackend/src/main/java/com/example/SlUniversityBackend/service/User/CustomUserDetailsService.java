@@ -32,7 +32,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Iterate through the user's roles (loaded eagerly due to FetchType.EAGER in User entity)
         for (Role role : u.getRoles()) {
-            // Add the role itself as an authority (with ROLE_ prefix)
             authorities.add(new SimpleGrantedAuthority(role.getName().toUpperCase()));
 
             // Iterate through the permissions of that role (loaded eagerly due to FetchType.EAGER in Role entity)

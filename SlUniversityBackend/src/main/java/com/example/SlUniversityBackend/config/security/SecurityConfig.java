@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,8 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 
 public class SecurityConfig {
 
@@ -53,19 +54,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
 
-//                        .requestMatchers("/api/roles/**").hasRole("ROLE_SUPER_ADMIN")
-//                        .requestMatchers("/api/permissions/**").hasRole("ROLE_SUPER_ADMIN")
-//                        .requestMatchers("/api/admins/**").hasRole("ROLE_SUPER_ADMIN")
-//                        .anyRequest().permitAll()
+                          .requestMatchers("/api/roles/**").hasRole("SUPER_ADMIN")
+                          .requestMatchers("/api/permissions/**").hasRole("SUPER_ADMIN")
+                          .requestMatchers("/api/system_users/**").hasRole("SUPER_ADMIN")
+                                .anyRequest().authenticated()
 
-//                          Secure admin management endpoints - Require SUPER_ADMIN role
-                          .requestMatchers("/api/roles/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here
-                          .requestMatchers("/api/permissions/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here
-                          .requestMatchers("/api/admins/**").hasRole("SUPER_ADMIN") // Corrected: No ROLE_ prefix needed here (assuming this controls user/admin management)
-
-                        // Example: If you have general user endpoints accessible by admins or based on permissions
-                        // .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN") // Allow ADMIN or SUPER_ADMIN to read users
-                        // .requestMatchers(HttpMethod.GET, "/api/users/profile").authenticated() // Allow any logged-in user to see their profile
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)

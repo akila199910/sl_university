@@ -1,4 +1,4 @@
-package com.example.SlUniversityBackend.dto.Admin.users;
+package com.example.SlUniversityBackend.dto.Admin.SystemUsers;
 
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.config.security.Roles;
-import com.example.SlUniversityBackend.dto.Admin.users.AdminReqDTO;
-import com.example.SlUniversityBackend.dto.Admin.users.SystemUserPageDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserCreateDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserPageDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.entity.Role;
@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class AdminService {
+public class SystemUserService {
 
     @Value("${app.api.base-url}")
     private String apiBaseUrl;
@@ -49,13 +49,12 @@ public class AdminService {
     PagedResourcesAssembler<UserResponseDTO> pagedResourcesAssembler;
 
     public SuccessDTO getSystemUsers(Pageable pageable, String search, String role){
+
         Page<User> users;
         boolean hasSearch = search != null && !search.trim().isEmpty();
         boolean hasRole = role != null && !role.trim().isEmpty();
-        System.out.println(hasRole);
 
         if (hasSearch && hasRole) {
-            // Only users whose name contains search AND has the selected role, excluding ROLE_USER
             users = userRepository.findByNameContainingIgnoreCaseAndRolesNotContaining(
                     search,
                     roleRepository.findById(Integer.parseInt(role)),
@@ -98,6 +97,11 @@ public class AdminService {
                     u.getProfile().getCoverUrl()
             ));
             userDto.setRoles(getListOfRoles(u));
+
+            String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(String.valueOf(u.getId()).getBytes());
+            userDto.setViewUrl(apiBaseUrl + "/users/" + encodedId);
+            userDto.setEditUrl(apiBaseUrl + "/users/" + encodedId);
+            userDto.setDeleteUrl(apiBaseUrl + "/users/" + encodedId);
             userResponseDTOList.add(userDto);
         }
 
@@ -119,14 +123,14 @@ public class AdminService {
     }
 
 
-    public SuccessDTO createSystemUser(AdminReqDTO adminReqDTO){
+    public SuccessDTO createSystemUser(SystemUserCreateDTO systemUserCreateDTO){
 
         Map<String, String> body = new HashMap<>();
 
-        if(userRepository.existsByEmail(adminReqDTO.getEmail())){
+        if(userRepository.existsByEmail(systemUserCreateDTO.getEmail())){
            body.put("email", "Email is already taken.");
         }
-        if(userRepository.existsByContactNumber(adminReqDTO.getContactNumber())){
+        if(userRepository.existsByContactNumber(systemUserCreateDTO.getContactNumber())){
             body.put("contactNumber", "Contact number is already taken.");
         }
 
@@ -140,14 +144,14 @@ public class AdminService {
         userProfileRepository.save(userProfile);
 
         User user = new User();
-        user.setFirstName(adminReqDTO.getFirstName());
-        user.setLastName(adminReqDTO.getLastName());
-        user.setName(adminReqDTO.getFirstName() + " " + adminReqDTO.getLastName());
-        user.setEmail(adminReqDTO.getEmail());
-        user.setContactNumber(adminReqDTO.getContactNumber());
-        user.setStatus(adminReqDTO.getStatus());
+        user.setFirstName(systemUserCreateDTO.getFirstName());
+        user.setLastName(systemUserCreateDTO.getLastName());
+        user.setName(systemUserCreateDTO.getFirstName() + " " + systemUserCreateDTO.getLastName());
+        user.setEmail(systemUserCreateDTO.getEmail());
+        user.setContactNumber(systemUserCreateDTO.getContactNumber());
+        user.setStatus(systemUserCreateDTO.getStatus());
 
-        user.setPassword(passwordEncoder.encode(!adminReqDTO.getPassword().isEmpty() ? adminReqDTO.getPassword() : "Admin@1234"));
+        user.setPassword(passwordEncoder.encode(!systemUserCreateDTO.getPassword().isEmpty() ? systemUserCreateDTO.getPassword() : "Admin@1234"));
         Role adminRole = roleRepository.findByName(Roles.ROLE_ADMIN);
         Set<Role> roles = new HashSet<>();
         roles.add(adminRole);
@@ -177,7 +181,7 @@ public class AdminService {
             userDto.setStatus(u.getStatus());
             userDto.setRoles(getListOfRoles(u));
             userDto.setProfile(new UserResponseDTO.ProfileDTO(u.getProfile().getId(),u.getProfile().getProfileUrl(),u.getProfile().getCoverUrl()));
-            return new SuccessDTO("User fletch successfully", true, userDto);
+            return new SuccessDTO("System User fletch successfully", true, userDto);
     }
 
     private List<UserResponseDTO.RoleDTO> getListOfRoles(User u){
