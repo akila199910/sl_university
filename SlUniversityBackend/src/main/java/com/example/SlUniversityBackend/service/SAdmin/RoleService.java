@@ -4,13 +4,18 @@ import com.example.SlUniversityBackend.config.security.Roles;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreateDTO;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleResponseDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
+import com.example.SlUniversityBackend.entity.Permission;
 import com.example.SlUniversityBackend.entity.Role;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
+import com.example.SlUniversityBackend.exception.NotFoundException;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +67,30 @@ public class RoleService {
         roleRepository.save(newRole);
         return new SuccessDTO("Role created success.", true, newRole.getName());
     }
+
+    public SuccessDTO getRoleById(Integer id) {
+        Role findRole = roleRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        Map.of("roleId", "No role found with ID " + id),
+                        "Role not found.",
+                        false
+                ));
+
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(findRole.getId());
+        roleResponseDTO.setName(findRole.getName());
+        roleResponseDTO.setPermissions(mapPermissions(findRole.getPermissions()));
+
+        return new SuccessDTO("Role fetch success", true, roleResponseDTO);
+    }
+
+    private List<RoleResponseDTO.PermissionList> mapPermissions(List<Permission> list) {
+        return list.stream()
+                .map(p -> new RoleResponseDTO.PermissionList(p.getId(), p.getName()))
+                .toList();
+    }
+
+
 
 }
 

@@ -42,4 +42,10 @@ public class RoleController {
     public ResponseEntity<SuccessDTO> createRole(@Valid @RequestBody RoleCreateDTO roleCreateDTO){
         return ResponseEntity.ok(roleService.roleCreate(roleCreateDTO));
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SuccessDTO> getRoleById(@PathVariable Integer id){
+        return ResponseEntity.ok(roleService.getRoleById(id));
+    }
 }
