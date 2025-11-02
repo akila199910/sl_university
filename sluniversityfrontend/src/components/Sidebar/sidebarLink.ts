@@ -9,7 +9,12 @@ import defaultBlack from './icons/default-black.svg';
 const sidebarLinks = [
     { id: 1, name: 'Dashboard', link: '/dashboard' , icon: dashboardBlack},
     { id: 2, name: 'Profile', link: '/profile' , icon: profileBlack},
-    { id: 3, name: 'Settings', link: '/settings', icon: settingsBlack },
+    { id: 3, name: 'Settings', link: '/settings', icon: settingsBlack, multy: true, 
+        subLinks: [
+            { id: 1, name: 'Admins', link: '/admins', icon: adminsBlack },
+            { id: 2, name: 'Users', link: '/users', icon: usersBlack },
+        ]
+    },
     { id: 4, name: 'Help', link: '/help', icon: defaultBlack },
     { id: 5, name: 'About', link: '/about', icon: defaultBlack },
     { id: 6, name: 'Logout', link: '/logout', icon: logoutBlack },

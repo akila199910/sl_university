@@ -117,8 +117,15 @@ const UsersPage = () => {
             {loading && <p>Loading users…</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
 
+            
+
             {!loading && !error && (
                 <>
+                    <div className="flex justify-end mb-2">
+                        <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition">
+                            Add User
+                        </button>
+                    </div>
                     <div className='overflow-x-auto'>
                         <table className='table-auto w-full border-collapse border border-gray-300'>
                             <thead>
