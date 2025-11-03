@@ -16,6 +16,10 @@ public class RoleResponseDTO {
     private String name;
     private Boolean status;
     private Set<PermissionList> permissions;
+    private String viewUrl;
+    private String editUrl;
+    private String deleteUrl;
+    private Boolean canCreate;
 
 
     @Data

@@ -24,23 +24,22 @@ export async function GET(req: Request) {
       cache: 'no-store',
     });
 
-    // const data = await res.json();
-console.log('Response from backend /api/roles:', res);
+    const data = await res.json();
+
     if (!res.ok) {
       return NextResponse.json({ 
         success: false, 
-        // message: data.message || 'Backend error',
-        // errors: data.errors 
+        message: data.message || 'Backend error',
+        errors: data.errors 
       }, { 
-        // status: res.status 
+        status: res.status 
       });
     }
 
     return NextResponse.json({ 
-    //   success: data.success,
-    //   userPage: data?.data.userPage,
-    //   availableRoles: data.data.availableRoles,
-    //   message: data.message || 'Users fetched successfully'
+      success: data.success,
+      rolePage: data?.data,
+      message: data.message || 'Users fetched successfully'
     }, { 
       status: res.status,
       headers: {

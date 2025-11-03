@@ -1,6 +1,5 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
-import com.example.SlUniversityBackend.config.security.Roles;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreateDTO;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleResponseDTO;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleUpdateDTO;
@@ -13,12 +12,14 @@ import com.example.SlUniversityBackend.repository.PermissionRepository;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
@@ -27,11 +28,17 @@ import java.util.stream.Collectors;
 @Service
 public class RoleService {
 
+    @Value("${app.api.base-url}")
+    private String apiBaseUrl;
+
     @Autowired
     private RoleRepository roleRepository;
 
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    PagedResourcesAssembler<RoleResponseDTO> pagedResourcesAssembler;
 
     public SuccessDTO getAllRoles(Pageable pageable) {
 
@@ -39,8 +46,9 @@ public class RoleService {
 
         Page<RoleResponseDTO> roleResponseDTOPage = rolePage.map(role -> {
             RoleResponseDTO dto = new RoleResponseDTO();
-            dto.setName(role.getName());
             dto.setId(role.getId());
+            dto.setName(role.getName());
+            dto.setStatus(role.getStatus());
 
             Set<RoleResponseDTO.PermissionList> permissionList = role.getPermissions()
                     .stream()
@@ -51,13 +59,25 @@ public class RoleService {
                     .collect(Collectors.toSet());
 
             dto.setPermissions(permissionList);
+
+            String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(String.valueOf(role.getId()).getBytes());
+
+            dto.setViewUrl(apiBaseUrl + "/roles/" + encodedId);
+            dto.setEditUrl(apiBaseUrl + "/roles/" + encodedId);
+            dto.setDeleteUrl(apiBaseUrl + "/roles/" + encodedId);
+
             return dto;
         });
+
+
+
+        PagedModel<EntityModel<RoleResponseDTO>> pagedModel =
+                pagedResourcesAssembler.toModel(roleResponseDTOPage);
 
         return new SuccessDTO(
                 "Roles fetched successfully",
                 true,
-                roleResponseDTOPage
+                pagedModel
         );
     }
 
@@ -92,7 +112,6 @@ public class RoleService {
 
         return new SuccessDTO("Role created successfully.", true, newRole.getName());
     }
-
 
     public SuccessDTO getRoleById(Integer id) {
         Role findRole = roleRepository.findById(id)
