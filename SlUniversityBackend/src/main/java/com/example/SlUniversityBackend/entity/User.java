@@ -38,14 +38,13 @@ public class User {
     @Column(name = "status", nullable = true)
     private Boolean status;
 
-    @ManyToMany(fetch = FetchType.EAGER) // EAGER is often needed for security
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "user_roles", // Name of the intermediate table
-            joinColumns = @JoinColumn(name = "user_id"), // Foreign key column for User in the join table
-            inverseJoinColumns = @JoinColumn(name = "role_id") // Foreign key column for Role in the join table
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>(); // Use Set for ManyToMany
-    // --- End Relationship ---
+    private Set<Role> roles = new HashSet<>();
 
 
     @OneToOne(cascade = CascadeType.ALL)

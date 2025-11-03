@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +14,8 @@ public class RoleResponseDTO {
 
     private Integer id;
     private String name;
-    private List<PermissionList> permissions;
+    private Boolean status;
+    private Set<PermissionList> permissions;
 
 
     @Data

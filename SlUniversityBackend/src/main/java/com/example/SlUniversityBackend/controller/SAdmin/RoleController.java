@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.controller.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreateDTO;
+import com.example.SlUniversityBackend.dto.Admin.Roles.RoleUpdateDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.service.SAdmin.RoleService;
 import jakarta.validation.Valid;
@@ -47,5 +48,10 @@ public class RoleController {
     @GetMapping("/{id}")
     public ResponseEntity<SuccessDTO> getRoleById(@PathVariable Integer id){
         return ResponseEntity.ok(roleService.getRoleById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SuccessDTO> updateRole(@Valid @RequestBody RoleUpdateDTO roleUpdateDTO, @PathVariable Integer id){
+        return ResponseEntity.ok(roleService.updateRole(roleUpdateDTO,id));
     }
 }

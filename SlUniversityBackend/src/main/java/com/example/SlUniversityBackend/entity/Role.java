@@ -1,15 +1,15 @@
 package com.example.SlUniversityBackend.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -20,22 +20,19 @@ public class Role {
     private Integer id;
     private String name;
 
-
-    // --- ManyToMany Relationship with Permission ---
     @ManyToMany(fetch = FetchType.EAGER) // EAGER needed for loading authorities
     @JoinTable(
             name = "role_permissions",
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
-    private List<Permission> permissions;
-    // --- End Relationship ---
+    private Set<Permission> permissions = new HashSet<>();
 
-
-    // --- Inverse side of User-Role relationship (Optional but often useful) ---
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY) // LAZY is okay here, mappedBy indicates it's defined on User
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
-    // --- End Inverse Relationship ---
+
+    @Column(name = "status", nullable = true)
+    private Boolean status;
 
     private LocalDateTime createdAt;
 
