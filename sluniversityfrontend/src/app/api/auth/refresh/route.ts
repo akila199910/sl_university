@@ -10,18 +10,12 @@ export async function GET(req:any) {
     console.log('Refresh token from cookie:', refreshToken);
 
     if(!refreshToken){
-        // include base so URL is valid and serializes correctly
         return NextResponse.redirect(new URL('/login', req.url).toString());
     }
 
-    // Send both possible property names to accommodate backend expectations
     const requestBody = { refreshToken, refresh_token: refreshToken };
-    console.log('Sending refresh request body to backend:', requestBody);
 
-    // Also include the refresh token as a Cookie, Authorization header,
-    // query param and a custom header to handle backends that read the token
-    // from cookies, headers, or request parameters.
-    const backendUrl = `http://localhost:8080/api/auth/refresh?refreshToken=${encodeURIComponent(refreshToken)}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh?refreshToken=${encodeURIComponent(refreshToken)}`;
     const res = await fetch(backendUrl, {
         method: 'POST',
         headers: {

@@ -13,7 +13,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/system_users${qs}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/system_users${qs}`;
+
+    console.log('Proxying /api/admin/users request to backend URL:', backendUrl);
 
     const res = await fetch(backendUrl, {
       method: 'GET',

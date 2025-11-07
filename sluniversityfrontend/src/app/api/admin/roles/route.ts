@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/roles`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/roles`;
 
     const res = await fetch(backendUrl, {
       method: 'GET',

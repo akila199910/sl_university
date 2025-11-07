@@ -49,6 +49,7 @@ const UsersPage = () => {
                     credentials: 'same-origin'
                 });
 
+                console.log('Users API response status:', res);
                 if (res.status === 401) {
                     window.location.href = '/login';
                     return;
