@@ -5,6 +5,7 @@ import usersBlack from './icons/users-black.svg';
 import logoutBlack from './icons/logout-black.svg';
 import adminsBlack from './icons/admin-black.svg';
 import defaultBlack from './icons/default-black.svg';
+import rolesBlack from './icons/roles-black.svg';
 
 const sidebarLinks = [
     { id: 1, name: 'Dashboard', link: '/dashboard' , icon: dashboardBlack},
@@ -13,6 +14,7 @@ const sidebarLinks = [
         subLinks: [
             { id: 1, name: 'Admins', link: '/admins', icon: adminsBlack },
             { id: 2, name: 'Users', link: '/users', icon: usersBlack },
+            { id: 3, name: 'Roles', link: '/roles', icon: rolesBlack },
         ]
     },
     { id: 4, name: 'Help', link: '/help', icon: defaultBlack },
