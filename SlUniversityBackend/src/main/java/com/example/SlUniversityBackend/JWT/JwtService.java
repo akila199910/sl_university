@@ -25,10 +25,6 @@ public class JwtService {
             @Value("${app.jwt.secret}")String secret,
             @Value("${jwt.access-token-expiration-ms}") long accessTokenValidityMs) {
 
-        if (secret == null || secret.length() < 32) {
-            System.out.println(secret);
-            throw new IllegalArgumentException("JWT_SECRET must be at least 32 characters long!");
-        }
         this.secret = secret;
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.accessTokenValidityMs = accessTokenValidityMs;

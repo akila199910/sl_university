@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 type LoginErrors = {
   email?: string;
@@ -11,8 +12,9 @@ type LoginErrors = {
 
 
 export default function LoginPage() {
-  
+
   const router = useRouter();
+  const { login , user} = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<LoginErrors | null>(null);
 
@@ -20,26 +22,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setError(data.errors || { message: data.message });
-        return;
-      }
-
+      await login(form);
       router.push("/dashboard");
+      console.log("Logged in user:", user);
 
-    } catch (err: any) { 
-      console.log(err);
-      setError(err || "An unexpected error occurred" );
     }
+    catch (err: any) {
+      console.log(err);
+      const errors = err?.response?.data?.errors ?? err?.response?.data ?? err?.message;
+      setError(typeof errors === 'string' ? { message: errors } : errors);
+    }
+
   }
+
 
   return (
     <main className="p-6 max-w-md mx-auto">
@@ -54,7 +50,7 @@ export default function LoginPage() {
             id="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            
+
             className="w-full border px-3 py-2"
           />
           {error?.email && <p className="text-red-500">{error.email}</p>}
@@ -66,7 +62,7 @@ export default function LoginPage() {
             id="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            
+
             className="w-full border px-3 py-2"
           />
           {error?.password && <p className="text-red-500">{error.password}</p>}
@@ -78,6 +74,6 @@ export default function LoginPage() {
           Login
         </button>
       </form>
-    </main>
-  );
+    </main>
+  );
 }

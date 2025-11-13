@@ -1,5 +1,6 @@
 package com.example.SlUniversityBackend.dto.Auth;
 
+import com.example.SlUniversityBackend.dto.SuccessDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,5 +9,5 @@ import lombok.Data;
 public class LoginResDTO {
     private String accessToken;
     private String refreshToken;
-    private Object user;
+    private SuccessDTO successDTO;
 }

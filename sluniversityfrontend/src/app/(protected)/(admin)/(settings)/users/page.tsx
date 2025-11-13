@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { type User } from '@/types/users'
+import api from '@/app/lib/api'
 
 type Role = {
     id:number,
@@ -43,20 +44,8 @@ const UsersPage = () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`/api/admin/users?page=${page}&size=${size}&role=${role}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin'
-                });
-
-                console.log('Users API response status:', res);
-                if (res.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-
-                const data = await res.json().catch(() => ({} as UsersResponse));
-
+                const res = await api.get(`/system_users?page=${page}&size=${size}&role=${role}`);
+                const data: UsersResponse = res.data.data;
                 const list = Array.isArray(data?.userPage.content) ? data.userPage.content : [];
             
 

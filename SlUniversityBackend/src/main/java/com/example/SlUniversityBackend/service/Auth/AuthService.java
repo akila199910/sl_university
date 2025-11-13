@@ -2,9 +2,7 @@ package com.example.SlUniversityBackend.service.Auth;
 
 import com.example.SlUniversityBackend.JWT.JwtService;
 import com.example.SlUniversityBackend.config.security.Roles;
-import com.example.SlUniversityBackend.dto.Auth.LoginDTO;
-import com.example.SlUniversityBackend.dto.Auth.LoginResDTO;
-import com.example.SlUniversityBackend.dto.Auth.RegisterReqDTO;
+import com.example.SlUniversityBackend.dto.Auth.*;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.entity.RefreshToken;
 import com.example.SlUniversityBackend.entity.Role;
@@ -13,23 +11,26 @@ import com.example.SlUniversityBackend.entity.UserProfile;
 import com.example.SlUniversityBackend.exception.DuplicateFieldException;
 import com.example.SlUniversityBackend.exception.NotFoundException;
 import com.example.SlUniversityBackend.exception.RequestValidationFailException;
+import com.example.SlUniversityBackend.repository.RefreshTokenRepository;
 import com.example.SlUniversityBackend.repository.RoleRepository;
 import com.example.SlUniversityBackend.repository.UserProfileRepository;
 import com.example.SlUniversityBackend.repository.UserRepository;
+import com.example.SlUniversityBackend.service.User.CustomUserDetailsService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -40,16 +41,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final HttpServletResponse response;
     private final UserProfileRepository userProfileRepository;
+    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,
                        RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
-                       RefreshTokenService refreshTokenService, HttpServletResponse response,
-                       UserProfileRepository userProfileRepository
+                       RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository, HttpServletResponse response,
+                       UserProfileRepository userProfileRepository, CustomUserDetailsService customUserDetailsService
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -57,8 +60,10 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.response = response;
         this.userProfileRepository = userProfileRepository;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     public SuccessDTO register( RegisterReqDTO adminReqDTO) {
@@ -100,7 +105,7 @@ public class AuthService {
     }
 
 
-    public SuccessDTO login(LoginDTO authReq) {
+    public LoginResDTO login(LoginDTO authReq) {
 
         User  searchUser = userRepository.findByEmail(authReq.getEmail()).orElseThrow(
                 ()-> new NotFoundException(Map.of(
@@ -132,61 +137,55 @@ public class AuthService {
         RefreshToken rt = refreshTokenService.createRefreshToken(user);
 
         Map<String, Object>  loginData = new HashMap<>();
+
+        List<RoleDTO> roleDTOs = user.getRoles().stream()
+                .map(role -> new RoleDTO(role.getId(), role.getName()))
+                .toList();
+
         loginData.put("id", user.getId());
+        loginData.put("name", user.getName());
         loginData.put("email", user.getEmail());
+        loginData.put("roles",roleDTOs);
+        loginData.put("profileImageUrl", user.getProfile().getProfileUrl());
+        loginData.put("coverImageUrl", user.getProfile().getCoverUrl());
         loginData.put("refreshToken", rt.getToken());
         loginData.put("accessToken", accessToken);
 
-         return new SuccessDTO("Login success", true,loginData);
+
+        SuccessDTO successDTO = new SuccessDTO("Login Success", true,loginData);
+
+         return new LoginResDTO(accessToken,rt.getToken(),successDTO);
     }
 
-    public SuccessDTO refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null){
-            throw new RequestValidationFailException(
-                    Map.of("refreshToken", "Refresh token not send"),
-                    "Authentication fail.",
-                    false
-            );
-        }
+    public RefreshTokenResponseDTO refreshToken(String token) {
 
-        String token = null;
-        for (Cookie c : cookies) {
-            if ("refreshToken".equals(c.getName())) {
-                token = c.getValue();
-            }
-        }
         if (token == null) {
             throw new RequestValidationFailException(
-                    Map.of("refreshToken", "Refresh token not send"),
+                    Map.of("refreshToken", "Refresh token is required."),
                     "Authentication fail.",
                     false
             );
         }
 
         RefreshToken rt = refreshTokenService.findByToken(token);
+
         if (rt == null || refreshTokenService.isTokenExpired(rt)) {
             throw new RequestValidationFailException(
-                    Map.of("refreshToken", "Refresh token not send"),
+                    Map.of("refreshToken", "Refresh token is invalid or expired"),
                     "Authentication fail.",
                     false
             );
         }
 
         User user = rt.getUser();
-        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", user.getRoles() != null ? user.getRoles() : "USER"));
 
-        // optionally rotate refresh token: delete old and issue new one
-        refreshTokenService.deleteByUser(user);
         RefreshToken newRt = refreshTokenService.createRefreshToken(user);
-        Cookie cookie = new Cookie("refreshToken", newRt.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int)((newRt.getExpiryDate().getEpochSecond() - Instant.now().getEpochSecond())));
-        // cookie.setSecure(true);
-        response.addCookie(cookie);
 
-        return new SuccessDTO("New access token.",true,newAccessToken);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
+
+        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), Map.of("roles", userDetails.getAuthorities()));
+
+        return new RefreshTokenResponseDTO(newAccessToken, newRt);
     }
 
     public SuccessDTO logout(HttpServletRequest request, HttpServletResponse response){

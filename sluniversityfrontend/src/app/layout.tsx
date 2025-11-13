@@ -1,4 +1,5 @@
 "use client";
+import { AuthProvider } from "@/app/context/AuthContext";
 import Navbar from "@/components/Header/Navbar";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar/Sidebar";
@@ -51,7 +52,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 px-4 py-6 overflow-y-auto
               `}
             >
-              {children}
+              <AuthProvider>
+                {children}
+              </AuthProvider>
             </main>
           </div>
         </div>

@@ -24,7 +24,6 @@ public class RefreshTokenService {
     }
     @Transactional
     public RefreshToken createRefreshToken(User user) {
-        // check if user already has a refresh token
         Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
 
         if (existingToken.isPresent()) {
@@ -34,7 +33,6 @@ public class RefreshTokenService {
             return refreshTokenRepository.save(token);
         }
 
-        // otherwise create a new one
         RefreshToken newToken = new RefreshToken();
         newToken.setUser(user);
         newToken.setToken(UUID.randomUUID().toString());
