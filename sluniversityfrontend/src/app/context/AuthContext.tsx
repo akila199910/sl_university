@@ -34,24 +34,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const checkUserStatus = async () => {
-  //     try {
-  //       const response = await api.get('/my-profile'); 
-  //       setUser(response.data);
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const response = await api.get('/my-profile'); 
+        const loginUser: User = {
+          id: response.data.data.id,
+          name: response.data.data.name,
+          email: response.data.data.email,
+          role: response.data.data.roles,
+          profileImageUrl: response.data.data.profileImageUrl,
+          coverImageUrl: response.data.data.coverImageUrl,
 
-  //     } catch (error: any) {
+        };
+        setUser(loginUser);
 
-  //       setUser(null);
+      } catch (error: any) {
 
-  //     } finally {
+        setUser(null);
+
+      } finally {
        
-  //       setIsLoading(false);
-  //     }
-  //   };
+        setIsLoading(false);
+      }
+    };
 
-  //   checkUserStatus();
-  // }, []);
+    checkUserStatus();
+  }, []);
 
   const login = async (loginData: LoginDTO) => {
 
