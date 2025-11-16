@@ -17,10 +17,6 @@ type UsersResponse = {
                 totalElements: number;
                 totalPages: number;
             }
-            totalPages: number;
-            totalElements: number;
-            number: number;
-            size: number;
     },
     availableRoles:Role[] 
 }

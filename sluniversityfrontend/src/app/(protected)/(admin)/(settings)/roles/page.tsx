@@ -1,6 +1,22 @@
 "use client"
+import api from '@/app/lib/api';
 import { type Role } from '@/types/role';
 import React, { useEffect, useState } from 'react'
+
+type RoleResponse = {
+   
+            content: Role[];
+            page:{
+                number: number;
+                size: number;
+                totalElements: number;
+                totalPages: number;
+            }
+            totalPages: number;
+            totalElements: number;
+            number: number;
+            size: number;
+}
 
 const RolePage = () => {
 
@@ -19,30 +35,20 @@ const RolePage = () => {
         async function load() {
             setLoading(true);
             setError(null);
+
             try {
-                const res = await fetch(`/api/admin/roles`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin'
-                });
-
-                if (res.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-
-                const data = await res.json().catch(() => ({}));
-
-                const list = Array.isArray(data.rolePage?.content) ? data.rolePage.content : [];
-
+                const res = await api.get(`/roles?page=${page}&size=${size}`);
+                const data: RoleResponse = res.data.data;
+                const list = Array.isArray(data?.content) ? data.content : [];
+            
 
                 if (mounted) {
                     setRoles(list);
-                    setTotalPages(data?.rolePage?.page?.totalPages || 0);
-                    setTotalElements(data.userPage?.page?.totalElements || 0);
+                    setTotalPages(data?.page?.totalPages || 0);
+                    setTotalElements(data?.page?.totalElements || 0);
                 }
             } catch (err: any) {
-                console.error('Failed to load users', err);
+                console.error('Failed to load roles', err);
                 if (mounted) setError(err?.message || 'Failed to load users');
             } finally {
                 if (mounted) setLoading(false);
