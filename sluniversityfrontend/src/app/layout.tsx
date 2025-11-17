@@ -15,14 +15,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-amber-50">
-        <div className="flex flex-col min-h-screen w-full">
+        <div className="flex flex-col min-h-screen w-full ">
 
           {/* Navbar */}
           <div className="w-full fixed z-50">
             <Navbar onToggleSidebar={handleToggleSidebar} />
           </div>
 
-          <div className="flex mt-20 h-[calc(100vh-5rem)] relative">
+          <div className="flex mt-20 h-[calc(100vh-5rem)] relative ">
             {/* Sidebar */}
             <aside
               className={`

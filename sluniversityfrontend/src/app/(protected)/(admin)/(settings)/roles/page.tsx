@@ -1,21 +1,20 @@
 "use client"
 import api from '@/app/lib/api';
 import { type Role } from '@/types/role';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
 
 type RoleResponse = {
-   
-            content: Role[];
-            page:{
-                number: number;
-                size: number;
-                totalElements: number;
-                totalPages: number;
-            }
-            totalPages: number;
-            totalElements: number;
-            number: number;
-            size: number;
+
+    content: Role[];
+    page: {
+        number: number;
+        size: number;
+        totalElements: number;
+        totalPages: number;
+    }
+    canAdd: boolean;
+
 }
 
 const RolePage = () => {
@@ -27,6 +26,7 @@ const RolePage = () => {
     const [size, setSize] = useState<number>(10);
     const [totalPages, setTotalPages] = useState<number>(0);
     const [totalElements, setTotalElements] = useState<number>(0);
+    const [canAdd, setCanAdd] = useState<boolean>(false);
 
 
     useEffect(() => {
@@ -40,12 +40,13 @@ const RolePage = () => {
                 const res = await api.get(`/roles?page=${page}&size=${size}`);
                 const data: RoleResponse = res.data.data;
                 const list = Array.isArray(data?.content) ? data.content : [];
-            
+
 
                 if (mounted) {
                     setRoles(list);
                     setTotalPages(data?.page?.totalPages || 0);
                     setTotalElements(data?.page?.totalElements || 0);
+                    setCanAdd(res.data?.canAdd || false);
                 }
             } catch (err: any) {
                 console.error('Failed to load roles', err);
@@ -60,36 +61,36 @@ const RolePage = () => {
     }, [page, size]);
 
     function gotoPage(n: number) {
-            if (n < 0 || n >= totalPages) return;
-            setPage(n);
+        if (n < 0 || n >= totalPages) return;
+        setPage(n);
+    }
+
+    function changeSize(newSize: number) {
+        setSize(newSize);
+        setPage(0);
+    }
+
+    const renderPageButtons = () => {
+        if (totalPages <= 1) return null;
+        const buttons = [] as React.ReactNode[];
+        const start = Math.max(0, page - 2);
+        const end = Math.min(totalPages - 1, start + 4);
+
+        for (let i = start; i <= end; i++) {
+            buttons.push(
+                <button
+                    key={i}
+                    onClick={() => gotoPage(i)}
+                    className={`px-3 py-2 leading-tight border ${i === page ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-300 text-gray-600'}`}
+                    aria-current={i === page}
+                >
+                    {i + 1}
+                </button>
+            );
         }
-    
-        function changeSize(newSize: number) {
-            setSize(newSize);
-            setPage(0);
-        }
-    
-        const renderPageButtons = () => {
-            if (totalPages <= 1) return null;
-            const buttons = [] as React.ReactNode[];
-            const start = Math.max(0, page - 2);
-            const end = Math.min(totalPages - 1, start + 4);
-    
-            for (let i = start; i <= end; i++) {
-                buttons.push(
-                    <button
-                        key={i}
-                        onClick={() => gotoPage(i)}
-                        className={`px-3 py-2 leading-tight border ${i === page ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-300 text-gray-600'}`}
-                        aria-current={i === page}
-                    >
-                        {i + 1}
-                    </button>
-                );
-            }
-    
-            return buttons;
-        }
+
+        return buttons;
+    }
 
     return (
         <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
@@ -98,15 +99,21 @@ const RolePage = () => {
             {loading && <p>Loading Roles...</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
 
-            
+
 
             {!loading && !error && (
                 <>
-                    <div className="flex justify-end mb-2">
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition">
-                            Add Role
-                        </button>
-                    </div>
+                    {
+                        canAdd && (
+                            <div className="flex justify-end mb-2">
+                                <Link href="roles/create" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition"
+
+                                >
+                                    Add Role
+                                </Link>
+                            </div>
+                        )
+                    }
                     <div className='overflow-x-auto'>
                         <table className='table-auto w-full border-collapse border border-gray-300'>
                             <thead>
@@ -124,7 +131,7 @@ const RolePage = () => {
                                         <tr key={r.id}>
                                             <td className='border border-gray-300 px-4 py-2'>{page * size + index + 1}</td>
                                             <td className='border border-gray-300 px-4 py-2'>{r.name}</td>
-                                            <td className='border border-gray-300 px-4 py-2'>{r.permissions.map((p)=>{
+                                            <td className='border border-gray-300 px-4 py-2'>{r.permissions.map((p) => {
                                                 return (<span key={p.id} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">{p.name}</span>);
                                             })}</td>
                                             <td className='border border-gray-300 px-4 py-2'>
@@ -143,7 +150,7 @@ const RolePage = () => {
                                                         View
                                                     </button>
                                                 )}
-                                                
+
                                                 {r.editUrl != null && (
                                                     <button
                                                         className='px-2 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600'
@@ -155,14 +162,14 @@ const RolePage = () => {
 
                                                 {r.deleteUrl != null && (
                                                     <button
-                                                    className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
-                                                    onClick={() => alert(`Delete user ${r.id}`)}
-                                                >
-                                                    Delete
-                                                </button>
+                                                        className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
+                                                        onClick={() => alert(`Delete user ${r.id}`)}
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 )}
-                                                
-                                                
+
+
                                             </td>
                                         </tr>
                                     ))
