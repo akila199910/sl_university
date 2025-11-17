@@ -1,9 +1,6 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
-import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreateDTO;
-import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreatePageDTO;
-import com.example.SlUniversityBackend.dto.Admin.Roles.RoleResponseDTO;
-import com.example.SlUniversityBackend.dto.Admin.Roles.RoleUpdateDTO;
+import com.example.SlUniversityBackend.dto.Admin.Roles.*;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.entity.Permission;
 import com.example.SlUniversityBackend.entity.Role;
@@ -68,11 +65,9 @@ public class RoleService {
 
             dto.setPermissions(permissionList);
 
-            String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(String.valueOf(role.getId()).getBytes());
-
-            dto.setViewUrl(apiBaseUrl + "/roles/" + encodedId);
-            dto.setEditUrl(apiBaseUrl + "/roles/" + encodedId);
-            dto.setDeleteUrl(apiBaseUrl + "/roles/" + encodedId);
+            dto.setViewUrl(apiBaseUrl + "/roles/" + role.getId());
+            dto.setEditUrl(apiBaseUrl + "/roles/" + role.getId());
+            dto.setDeleteUrl(apiBaseUrl + "/roles/" + role.getId());
 
             return dto;
         });
@@ -172,20 +167,73 @@ public class RoleService {
                         false
                 ));
 
-        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
-        roleResponseDTO.setId(findRole.getId());
-        roleResponseDTO.setName(findRole.getName());
-        roleResponseDTO.setStatus(findRole.getStatus());
-        roleResponseDTO.setPermissions(mapPermissions(findRole.getPermissions()));
+        List<Permission> rolePermissions = findRole.getPermissions().stream().toList();
+        List<Permission> allPermissions = permissionRepository.findAll();
+        Set<Integer> rolePermissionIds = rolePermissions.stream()
+                .map(Permission::getId)
+                .collect(Collectors.toSet());
 
-        return new SuccessDTO("Role fetch success", true, roleResponseDTO);
+        Map<String, List<RoleUpdatePageDTO.PermissionActionDTO>> groupedPermissions = allPermissions.stream()
+                .filter(p -> p.getName().contains("_"))
+                .collect(Collectors.groupingBy(
+                        permission -> permission.getName().substring(0, permission.getName().indexOf("_")),
+
+                        Collectors.mapping(
+                                permission -> {
+                                    String name = permission.getName();
+                                    String action = name.substring(name.indexOf("_") + 1);
+
+                                    boolean isChecked = rolePermissionIds.contains(permission.getId());
+
+                                    return new RoleUpdatePageDTO.PermissionActionDTO(permission.getId(), formatActionName(action),isChecked);
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        List<RoleUpdatePageDTO.PermissionListDTO> permissionListDTOS = groupedPermissions.entrySet().stream()
+                .map(entry -> new RoleUpdatePageDTO.PermissionListDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        RoleUpdatePageDTO pageDTO = new RoleUpdatePageDTO();
+        pageDTO.setPermissions(permissionListDTOS);
+        pageDTO.setRoleName(findRole.getName());
+
+
+        return new SuccessDTO("Role fetch success", true, pageDTO);
+
+//        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+//        roleResponseDTO.setId(findRole.getId());
+//        roleResponseDTO.setName(findRole.getName());
+//        roleResponseDTO.setStatus(findRole.getStatus());
+//
+//        Set<Permission> rolePermissions = findRole.getPermissions();
+//
+//        List<Permission> rolePermissionslist = new ArrayList<Permission>(rolePermissions);
+//
+//        roleResponseDTO.setPermissions(mapPermissions(permissionRepository.findAll(),rolePermissionslist ));
+//
+//        return new SuccessDTO("Role fetch success", true, roleResponseDTO);
     }
 
-    private Set<RoleResponseDTO.PermissionList> mapPermissions(Set<Permission> list) {
+    private Set<RoleResponseDTO.PermissionList> mapPermissions(
+            List<Permission> allPermissions,
+            List<Permission> rolePermissions
+    ) {
 
-        return list.stream()
-                .map(p-> new RoleResponseDTO.PermissionList(p.getId(), p.getName())).collect(Collectors.toSet());
+        Set<Integer> selectedIds = rolePermissions.stream()
+                .map(Permission::getId)
+                .collect(Collectors.toSet());
+
+        return allPermissions.stream()
+                .map(p -> new RoleResponseDTO.PermissionList(
+                        p.getId(),
+                        p.getName(),
+                        selectedIds.contains(p.getId()) // true if permission belongs to role
+                ))
+                .collect(Collectors.toSet());
     }
+
 
     public SuccessDTO updateRole(@Valid @RequestBody RoleUpdateDTO roleUpdateDTO, Integer id){
 
@@ -199,21 +247,52 @@ public class RoleService {
         if (roleUpdateDTO.getStatus() == null){
             roleUpdateDTO.setStatus(findRole.getStatus());
         }
-        if (roleUpdateDTO.getPermissions() == null){
-            roleUpdateDTO.setPermissions(findRole.getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()));
+//        if (roleUpdateDTO.getPermissions() == null){
+//            roleUpdateDTO.setPermissions(findRole.getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()));
+//        }
+
+        if (roleUpdateDTO.getPermissions() != null) {
+
+            Set<Integer> previousPermissions = findRole.getPermissions().stream()
+                    .map(Permission::getId)
+                    .collect(Collectors.toSet());
+
+            List<Integer> newRequestPermission = roleUpdateDTO.getPermissions().stream().toList();
+
+            Set<Integer> newRequestSet = new HashSet<>(newRequestPermission);
+
+            List<Integer> newPermissions = newRequestPermission.stream()
+                    .filter(permissionId -> !previousPermissions.contains(permissionId))
+                    .toList();
+
+            List<Integer> removePermissions = previousPermissions.stream()
+                    .filter(pid -> !newRequestSet.contains(pid))
+                    .toList();
+
+            Set<Permission> currentPermissions = findRole.getPermissions();
+
+            List<Permission> permissionsToRemove = currentPermissions.stream()
+                    .filter(p -> removePermissions.contains(p.getId()))
+                    .toList();
+
+            permissionsToRemove.forEach(currentPermissions::remove);
+
+            if (!newPermissions.isEmpty()) {
+                List<Permission> permissionsToAdd = newPermissions.stream()
+                        .map(permissionId -> permissionRepository.findById(permissionId)
+                                .orElseThrow(() -> new NotFoundException(
+                                        Map.of("permissionId", "No permission found with ID " + permissionId),
+                                        "Permission not found.",
+                                        false
+                                )))
+                        .toList();
+
+                currentPermissions.addAll(permissionsToAdd);
+            }
+
         }
 
-        Set<Permission> permissionList = roleUpdateDTO.getPermissions().stream()
-                .map(permissionId -> permissionRepository.findById(permissionId)
-                        .orElseThrow(() -> new NotFoundException(
-                                Map.of("permissionId", "No permission found with ID " + permissionId),
-                                "Permission not found.",
-                                false
-                        )))
-                .collect(Collectors.toSet());
-
         findRole.setStatus(roleUpdateDTO.getStatus());
-        findRole.setPermissions(permissionList);
 
         roleRepository.save(findRole);
 

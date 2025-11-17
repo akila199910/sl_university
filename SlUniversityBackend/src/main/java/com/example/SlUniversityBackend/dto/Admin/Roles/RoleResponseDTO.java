@@ -21,10 +21,22 @@ public class RoleResponseDTO {
     private String deleteUrl;
 
     @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class PermissionList {
+
         private Integer id;
         private String name;
+        private boolean select;
+
+        public PermissionList(Integer id, String name, boolean select) {
+            this.id = id;
+            this.name = name;
+            this.select = select;
+        }
+
+        public PermissionList(Integer id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
     }
 }
