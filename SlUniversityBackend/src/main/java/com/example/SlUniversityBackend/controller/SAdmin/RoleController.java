@@ -39,6 +39,11 @@ public class RoleController {
 
     }
 
+    @GetMapping("/create")
+    public ResponseEntity<SuccessDTO> createRole(){
+        return ResponseEntity.ok( new SuccessDTO("Permission groups",true,roleService.createRole()));
+    }
+
     @PostMapping
     public ResponseEntity<SuccessDTO> createRole(@Valid @RequestBody RoleCreateDTO roleCreateDTO){
         return ResponseEntity.ok(roleService.roleCreate(roleCreateDTO));

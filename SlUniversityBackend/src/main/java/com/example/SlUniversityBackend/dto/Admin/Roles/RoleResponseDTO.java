@@ -19,8 +19,6 @@ public class RoleResponseDTO {
     private String viewUrl;
     private String editUrl;
     private String deleteUrl;
-    private Boolean canCreate;
-
 
     @Data
     @AllArgsConstructor

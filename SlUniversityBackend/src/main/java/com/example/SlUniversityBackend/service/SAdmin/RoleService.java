@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreateDTO;
+import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreatePageDTO;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleResponseDTO;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleUpdateDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
@@ -14,7 +15,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.SlUniversityBackend.config.security.Permissions.*;
+import static com.example.SlUniversityBackend.config.security.SecurityUtils.checkPermission;
 
 @Service
 public class RoleService {
@@ -42,6 +45,11 @@ public class RoleService {
 
     public SuccessDTO getAllRoles(Pageable pageable) {
 
+        boolean canAdd = false;
+        boolean[] checkList =  checkPermission(ROLE_READ, ROLE_CREATE, ROLE_UPDATE, ROLE_DELETE);
+        if(checkList[1]){
+            canAdd = true;
+        }
         Page<Role> rolePage = roleRepository.findAll(pageable);
 
         Page<RoleResponseDTO> roleResponseDTOPage = rolePage.map(role -> {
@@ -74,11 +82,54 @@ public class RoleService {
         PagedModel<EntityModel<RoleResponseDTO>> pagedModel =
                 pagedResourcesAssembler.toModel(roleResponseDTOPage);
 
+
         return new SuccessDTO(
                 "Roles fetched successfully",
                 true,
-                pagedModel
+                pagedModel,
+                canAdd
         );
+    }
+
+    public RoleCreatePageDTO createRole() {
+
+        List<Permission> allPermissions = permissionRepository.findAll();
+
+        Map<String, List<RoleCreatePageDTO.PermissionActionDTO>> groupedPermissions = allPermissions.stream()
+                .filter(p -> p.getName().contains("_"))
+                .collect(Collectors.groupingBy(
+                        // Key: The topic (e.g., "ADMIN")
+                        permission -> permission.getName().substring(0, permission.getName().indexOf("_")),
+
+                        // Value: A list of new PermissionActionDTOs
+                        Collectors.mapping(
+                                permission -> {
+                                    String name = permission.getName();
+                                    String action = name.substring(name.indexOf("_") + 1);
+                                    return new RoleCreatePageDTO.PermissionActionDTO(permission.getId(), formatActionName(action));
+                                },
+                                Collectors.toList() // Collect the DTOs into a list
+                        )
+                ));
+
+        List<RoleCreatePageDTO.PermissionListDTO> permissionListDTOS = groupedPermissions.entrySet().stream()
+                .map(entry -> new RoleCreatePageDTO.PermissionListDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        RoleCreatePageDTO pageDTO = new RoleCreatePageDTO();
+        pageDTO.setPermissions(permissionListDTOS);
+
+        return pageDTO;
+    }
+
+    private String formatActionName(String action) {
+        if (action == null || action.isEmpty()) {
+            return "";
+        }
+
+        return Arrays.stream(action.split("_"))
+                .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
     }
 
     public SuccessDTO roleCreate(RoleCreateDTO roleCreateDTO) {
