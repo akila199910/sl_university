@@ -92,6 +92,11 @@ const RolePage = () => {
         return buttons;
     }
 
+    const clickEdit = (id:string)=>{
+        console.log("Edit role with id: ", id);
+        window.location.href=`/roles/update/${id}`;
+    }
+
     return (
         <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
             <h1 className='text-2xl font-semibold mb-4'>Roles Management</h1>
@@ -154,7 +159,10 @@ const RolePage = () => {
                                                 {r.editUrl != null && (
                                                     <button
                                                         className='px-2 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600'
-                                                        onClick={() => alert(`Edit user ${r.id}`)}
+                                                        onClick={(e)=>{
+                                                            e.preventDefault();
+                                                            clickEdit(r.id.toString());
+                                                        }}
                                                     >
                                                         Edit
                                                     </button>

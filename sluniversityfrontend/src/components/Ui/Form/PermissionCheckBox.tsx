@@ -6,6 +6,7 @@ interface PermissionCheckBoxProps {
     htmlForAndId: string;
     permissionId?: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    checked?: boolean;
 }
 
 const PermissionCheckBox = (props: PermissionCheckBoxProps) => {
@@ -20,6 +21,7 @@ const PermissionCheckBox = (props: PermissionCheckBoxProps) => {
                 value={props.permissionId}
                 className="w-4 h-4 border-medium rounded-xs focus:ring-2 focus:ring-brand-soft"
                 onChange={props.onChange}
+                checked={props.checked}
             />
             <label
                 className="w-full ms-2 text-sm font-medium "

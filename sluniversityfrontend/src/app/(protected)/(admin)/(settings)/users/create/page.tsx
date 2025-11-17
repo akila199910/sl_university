@@ -11,8 +11,19 @@ const UserCreate = () => {
 
         <form>
           <div className="grid gap-6 mb-6 md:grid-cols-2">
-            <TextFormInput htmlForAndId='first_name' labelNaame='First Name' isRequired={true} placeHolder='First Name'/>
-            <TextFormInput htmlForAndId='last_name' labelNaame='Last Name' isRequired={true} placeHolder='Last Name'/>
+            <TextFormInput htmlForAndId='first_name' labelNaame='First Name'
+            onChange={(e:React.ChangeEvent<HTMLInputElement>) =>{
+                                            // setRoleName(e.target.value);
+                                            // console.log(roleName);
+                                        }}
+             isRequired={true} placeHolder='First Name'/>
+
+            <TextFormInput htmlForAndId='last_name' labelNaame='Last Name'
+             isRequired={true} placeHolder='Last Name'
+             onChange={(e:React.ChangeEvent<HTMLInputElement>) =>{
+                                            //  setRoleName(e.target.value);
+                                            //  console.log(roleName);
+                                         }}/>
           </div>
           {/* <div className="mb-6">
             <label htmlFor="email" className="block mb-2.5 text-sm font-medium text-heading">Email address</label>
