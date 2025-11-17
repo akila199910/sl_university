@@ -16,6 +16,8 @@ const AddRole = () => {
     const [permissions, setPermissions] = useState<PermissionResponse[]>([])
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
+    const [roleName, setRoleName] = useState<string>("");
 
     useEffect(
         () => {
@@ -39,6 +41,34 @@ const AddRole = () => {
             }
             fetchPermissions()
         }, [])
+
+        const handleSubmit = async (e:React.FormEvent) => {
+            e.preventDefault();
+            setLoading(true);
+            setError(null);
+            try {
+
+                const response = await api.post("roles", {
+                    name: roleName,
+                    permissions: selectedPermissions,
+                    status: true
+                });
+
+                setLoading(false);
+
+                //here should be show success alert
+                window.location.href = "/roles"; //redirect to roles list page after successful creation
+
+                console.log("Role created successfully:", response.data);
+                
+            } catch (error) {
+
+                console.error("Error creating role:", error);
+                setError(error instanceof Error ? error.message : "An unknown error occurred");
+                
+            }
+        }
+
     return (
         <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
             <h1 className='text-2xl font-semibold mb-4'>ADD NEW ROLE</h1>
@@ -48,9 +78,14 @@ const AddRole = () => {
 
             {!loading && !error &&
                 <>
-                    <form>
+                    <form onSubmit={handleSubmit}>
                         <div className="grid gap-6 mb-6 md:grid-cols-2 md:w-2/3">
-                            <TextFormInput htmlForAndId='role_name' labelNaame='Role Name' isRequired={true} placeHolder='Role Name' />
+                            <TextFormInput htmlForAndId='role_name' labelNaame='Role Name' 
+                            isRequired={true} placeHolder='Role Name'
+                            onChange={(e:React.ChangeEvent<HTMLInputElement>) =>{
+                                setRoleName(e.target.value);
+                                console.log(roleName);
+                            }} />
                         </div>
 
                         <hr />
@@ -69,6 +104,14 @@ const AddRole = () => {
                                                     htmlForAndId={permissionCategory.topic}
                                                     labelName={action.action}
                                                     permissionId={action.id.toString()}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                        const permissionId = action.id
+                                                        if (e.target.checked) {
+                                                            setSelectedPermissions(prevPermissions => [...prevPermissions, permissionId]);
+                                                        } else {
+                                                            setSelectedPermissions(prevPermissions => prevPermissions.filter(id => id !== permissionId));
+                                                        }
+                                                    }}
                                                 />
                                             ))
                                         }
@@ -84,8 +127,6 @@ const AddRole = () => {
                     </form>
                 </>
             }
-
-
         </div>
     )
 }
