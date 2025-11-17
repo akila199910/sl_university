@@ -3,6 +3,17 @@ import api from '@/app/lib/api';
 import { type Role } from '@/types/role';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
+import viewBlackIcon from '../../../../../../public/view-black.svg'
+import viewWhiteIcon from '../../../../../../public/view-white.svg'
+import ediBlackIcon from '../../../../../../public/edit-black.svg'
+import editWhiteIcon from '../../../../../../public/edit-white.svg'
+import deleteBlackIcon from '../../../../../../public/delete-black.svg'
+import deleteWhiteIcon from '../../../../../../public/delete-white.svg'
+import dropBlackIcon from '../../../../../../public/dropdown-black.svg'
+import dropWhiteIcon from '../../../../../../public/dropdown-white.svg'
+
+import Image from 'next/image';
+
 
 type RoleResponse = {
 
@@ -147,37 +158,36 @@ const RolePage = () => {
                                                 )}
                                             </td>
                                             <td className='border border-gray-300 px-4 py-2'>
+
                                                 {r.viewUrl != null && (
                                                     <button
-                                                        className='px-2 py-1 bg-green-500 text-white rounded mr-2 hover:bg-green-600'
+                                                        className=' bg-green-500 text-white rounded mr-1 hover:bg-green-600'
                                                         onClick={() => alert(`Edit user ${r.id}`)}
                                                     >
-                                                        View
+                                                    <Image src={viewBlackIcon} alt="eye" />
                                                     </button>
                                                 )}
 
                                                 {r.editUrl != null && (
                                                     <button
-                                                        className='px-2 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600'
+                                                        className=' bg-blue-500 text-white rounded mr-1 hover:bg-blue-600'
                                                         onClick={(e)=>{
                                                             e.preventDefault();
                                                             clickEdit(r.id.toString());
                                                         }}
                                                     >
-                                                        Edit
+                                                    <Image src={ediBlackIcon} alt="pencil" />
                                                     </button>
                                                 )}
 
                                                 {r.deleteUrl != null && (
                                                     <button
-                                                        className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
+                                                        className=' bg-red-500 text-white rounded hover:bg-red-600'
                                                         onClick={() => alert(`Delete user ${r.id}`)}
                                                     >
-                                                        Delete
+                                                        <Image src={deleteBlackIcon} alt="delete" />
                                                     </button>
                                                 )}
-
-
                                             </td>
                                         </tr>
                                     ))
