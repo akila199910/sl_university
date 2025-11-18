@@ -2,7 +2,9 @@
 import api from '@/app/lib/api'
 import PermissionCheckBox from '@/components/Ui/Form/PermissionCheckBox'
 import TextFormInput from '@/components/Ui/Form/TextFormInput'
+import Conform from '@/components/Ui/Helper/Conform'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 type PermissionResponse = {
@@ -14,11 +16,15 @@ type PermissionResponse = {
 }
 const AddRole = () => {
 
+    const router = useRouter();
+
     const [permissions, setPermissions] = useState<PermissionResponse[]>([])
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
     const [roleName, setRoleName] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     useEffect(
         () => {
@@ -44,34 +50,41 @@ const AddRole = () => {
         }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
+
         e.preventDefault();
-        setLoading(true);
+        if (!roleName) {
+            setError("Role Name is required.");
+            return;
+        }
+        setError(null);
+        setShowConfirmModal(true); 
+        //
+    }
+
+    const handleConfirmSubmit = async () => {
+        setIsSubmitting(true);
         setError(null);
         try {
-
-            const response = await api.post("roles", {
+            await api.post("roles", {
                 name: roleName,
                 permissions: selectedPermissions,
                 status: true
             });
-
-            setLoading(false);
-
-            //here should be show success alert
-            window.location.href = "/roles"; //redirect to roles list page after successful creation
-
-            console.log("Role created successfully:", response.data);
-
-        } catch (error) {
-
-            console.error("Error creating role:", error);
-            setError(error instanceof Error ? error.message : "An unknown error occurred");
-
+            
+            // Redirect on success
+            router.push(`/roles`);
+            // router.push(`/roles?success=${encodeURIComponent(`Role "${roleName}" created successfully.`)}`);
+            
+        } catch (err: any) {
+            console.error("Error creating role:", err);
+            setError(err instanceof Error ? err.message : "An unknown error occurred");
+            setIsSubmitting(false); 
+            setShowConfirmModal(false);
         }
-    }
+    };
 
     return (
-        <div className='m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
+        <div className='m-2 p-2 rounded-2xl max-w-6xl mx-auto relative'>
 
             {loading && <p>Loading ...</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
@@ -95,7 +108,7 @@ const AddRole = () => {
 
                         <div className="grid gap-6 mb-6 md:grid-cols-2 md:w-2/3">
                             <TextFormInput htmlForAndId='role_name' labelNaame='Role Name'
-                                isRequired={true} placeHolder='Role Name'
+                                isRequired={false} placeHolder='Role Name'
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                     setRoleName(e.target.value);
                                     console.log(roleName);
@@ -141,6 +154,15 @@ const AddRole = () => {
                     </form>
                 </div>
             }
+            {showConfirmModal && (
+                <Conform
+                    isLoading={isSubmitting}
+                    onCancel={() => setShowConfirmModal(false)}
+                    onConfirm={handleConfirmSubmit}
+                    message="Are you sure you want to create this role?"
+                />
+            )}
+            
         </div>
     )
 }
