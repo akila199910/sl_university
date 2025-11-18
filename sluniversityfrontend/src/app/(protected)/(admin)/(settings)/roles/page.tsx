@@ -11,7 +11,6 @@ import deleteBlackIcon from '../../../../../../public/delete-black.svg'
 import deleteWhiteIcon from '../../../../../../public/delete-white.svg'
 import dropBlackIcon from '../../../../../../public/dropdown-black.svg'
 import dropWhiteIcon from '../../../../../../public/dropdown-white.svg'
-
 import Image from 'next/image';
 
 
@@ -109,7 +108,7 @@ const RolePage = () => {
     }
 
     return (
-        <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
+        <div className='bg-white shadow-md rounded-lg p-6 m-2 max-w-6xl mx-auto'>
             <h1 className='text-2xl font-semibold mb-4'>Roles Management</h1>
 
             {loading && <p>Loading Roles...</p>}
@@ -162,7 +161,7 @@ const RolePage = () => {
                                                 {r.viewUrl != null && (
                                                     <button
                                                         className=' bg-green-500 text-white rounded mr-1 hover:bg-green-600'
-                                                        onClick={() => alert(`Edit user ${r.id}`)}
+                                                        onClick={()=>{window.location.href=`/roles/view/${r.id.toString()}`}}
                                                     >
                                                     <Image src={viewBlackIcon} alt="eye" />
                                                     </button>
