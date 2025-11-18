@@ -18,6 +18,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGlobalException(Exception ex, HttpServletRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("message", ex.getMessage());
+        body.put("errors",  ex.getStackTrace());
+        body.put("path", request.getRequestURI());
+
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(DuplicateFieldException.class)
     public ResponseEntity<Object> handleDuplicate(DuplicateFieldException ex, HttpServletRequest request){
         Map<String, Object> body = new HashMap<>();

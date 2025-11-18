@@ -198,22 +198,11 @@ public class RoleService {
         RoleUpdatePageDTO pageDTO = new RoleUpdatePageDTO();
         pageDTO.setPermissions(permissionListDTOS);
         pageDTO.setRoleName(findRole.getName());
+        pageDTO.setStatus(findRole.getStatus());
 
 
         return new SuccessDTO("Role fetch success", true, pageDTO);
 
-//        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
-//        roleResponseDTO.setId(findRole.getId());
-//        roleResponseDTO.setName(findRole.getName());
-//        roleResponseDTO.setStatus(findRole.getStatus());
-//
-//        Set<Permission> rolePermissions = findRole.getPermissions();
-//
-//        List<Permission> rolePermissionslist = new ArrayList<Permission>(rolePermissions);
-//
-//        roleResponseDTO.setPermissions(mapPermissions(permissionRepository.findAll(),rolePermissionslist ));
-//
-//        return new SuccessDTO("Role fetch success", true, roleResponseDTO);
     }
 
     private Set<RoleResponseDTO.PermissionList> mapPermissions(

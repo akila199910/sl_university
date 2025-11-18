@@ -13,6 +13,7 @@ public class RoleUpdatePageDTO {
 
     private List<PermissionListDTO> permissions;
     private String roleName;
+    private boolean status;
 
     @Data
     @AllArgsConstructor
