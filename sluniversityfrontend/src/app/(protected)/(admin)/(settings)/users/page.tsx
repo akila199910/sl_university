@@ -2,36 +2,45 @@
 import React, { useEffect, useState } from 'react'
 import { type User } from '@/types/users'
 import api from '@/app/lib/api'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import AddRecord from '@/components/Ui/Helper/AddRecord'
 
 type Role = {
-    id:number,
-    name:string
+    id: number,
+    name: string
 }
 
 type UsersResponse = {
-    userPage:{
-            content: User[];
-            page:{
-                number: number;
-                size: number;
-                totalElements: number;
-                totalPages: number;
-            }
+    userPage: {
+        content: User[];
+        page: {
+            number: number;
+            size: number;
+            totalElements: number;
+            totalPages: number;
+        }
     },
-    availableRoles:Role[] 
+    availableRoles: Role[]
 }
 
 const UsersPage = () => {
+
     const [users, setUsers] = useState<User[]>([]);
     const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
     const [page, setPage] = useState<number>(0);
     const [size, setSize] = useState<number>(10);
     const [role, setRole] = useState<number | ''>('')
     const [totalPages, setTotalPages] = useState<number>(0);
     const [totalElements, setTotalElements] = useState<number>(0);
+    const [recordAdd, setRecordAdd] = useState<boolean>(false);
+    const [showSomethinWrong, setShowSomethinWrong] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string>('')
+    const params = useSearchParams();
+    const router = useRouter();
+
 
     useEffect(() => {
         let mounted = true;
@@ -43,17 +52,18 @@ const UsersPage = () => {
                 const res = await api.get(`/system_users?page=${page}&size=${size}&role=${role}`);
                 const data: UsersResponse = res.data.data;
                 const list = Array.isArray(data?.userPage.content) ? data.userPage.content : [];
-            
 
                 if (mounted) {
                     setUsers(list);
                     setTotalPages(data?.userPage?.page?.totalPages || 0);
                     setTotalElements(data.userPage?.page?.totalElements || 0);
                     setAvailableRoles(data.availableRoles)
-                    console.log('Available Roles:', data);
                 }
             } catch (err: any) {
-                console.error('Failed to load users', err);
+
+                if (err.status == 500) {
+                    setShowSomethinWrong(true)
+                }
                 if (mounted) setError(err?.message || 'Failed to load users');
             } finally {
                 if (mounted) setLoading(false);
@@ -96,22 +106,49 @@ const UsersPage = () => {
         return buttons;
     }
 
+    if (recordAdd) {
+        setTimeout(() => setRecordAdd(false), 5000);
+    }
+    useEffect(() => {
+        if (params.get("success") === "true") {
+            setSuccessMessage('New Record Added Succuessfully.')
+            setRecordAdd(true)
+            router.replace("/users", undefined);
+        }
+        if (params.get("success_update") === "true") {
+            setSuccessMessage('Record Updated Succuessfully.')
+            setRecordAdd(true)
+            router.replace("/users", undefined);
+        }
+
+    }, [params]);
+
     return (
-        <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
+        <div className='bg-white shadow-md rounded-lg p-6 m-2 max-w-6xl mx-auto'>
             <h1 className='text-2xl font-semibold mb-4'>Users Management</h1>
 
             {loading && <p>Loading users…</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
 
-            
+
 
             {!loading && !error && (
                 <>
-                    <div className="flex justify-end mb-2">
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition">
-                            Add User
-                        </button>
-                    </div>
+                    {
+                        true && (
+                            <div className="flex justify-end mb-2">
+                                <Link href="users/create" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition"
+                                >
+                                    Add User
+                                </Link>
+                            </div>
+                        )
+
+                    }
+
+                    {
+                        recordAdd && <AddRecord message={successMessage} />
+                    }
                     <div className='overflow-x-auto'>
                         <table className='table-auto w-full border-collapse border border-gray-300'>
                             <thead>
@@ -120,20 +157,20 @@ const UsersPage = () => {
                                     <th className='border border-gray-300 px-4 py-2'>Name</th>
                                     <th className='border border-gray-300 px-4 py-2'>Email</th>
                                     <th className='border border-gray-300 px-4 py-2'>
-                                        <select 
+                                        <select
                                             value={role}
                                             onChange={(e) => setRole(e.target.value ? Number(e.target.value) : '')}
                                             className="w-full p-1 rounded border border-gray-300"
                                         >
                                             <option value="">All Roles</option>
                                             {availableRoles.map((r) => (
-                                                <option 
+                                                <option
                                                     key={r.id}
                                                     value={r.id}
                                                 >
                                                     {r.name}
                                                 </option>
-                                            ))}                                            
+                                            ))}
                                         </select>
                                     </th>
                                     <th className='border border-gray-300 px-4 py-2'>Contact</th>
@@ -158,7 +195,7 @@ const UsersPage = () => {
                                                 </div>
                                             </td>
                                             <td className='border border-gray-300 px-4 py-2'>{u.email}</td>
-                                            <td className='border border-gray-300 px-4 py-2'>{u.roles.map((r)=>r.name)}</td>
+                                            <td className='border border-gray-300 px-4 py-2'>{u.roles.map((r) => r.name + " / ")}</td>
                                             <td className='border border-gray-300 px-4 py-2'>{u.contactNumber}</td>
                                             <td className='border border-gray-300 px-4 py-2'>
                                                 {u.status ? (
@@ -176,7 +213,7 @@ const UsersPage = () => {
                                                         View
                                                     </button>
                                                 )}
-                                                
+
                                                 {u.editUrl != null && (
                                                     <button
                                                         className='px-2 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600'
@@ -188,14 +225,14 @@ const UsersPage = () => {
 
                                                 {u.deleteUrl != null && (
                                                     <button
-                                                    className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
-                                                    onClick={() => alert(`Delete user ${u.id}`)}
-                                                >
-                                                    Delete
-                                                </button>
+                                                        className='px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600'
+                                                        onClick={() => alert(`Delete user ${u.id}`)}
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 )}
-                                                
-                                                
+
+
                                             </td>
                                         </tr>
                                     ))

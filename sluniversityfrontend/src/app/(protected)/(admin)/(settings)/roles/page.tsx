@@ -65,7 +65,9 @@ const RolePage = () => {
                     setCanAdd(res.data?.canAdd || false);
                 }
             } catch (err: any) {
-                console.error('Failed to load roles', err);
+                if(err.status==500){
+                    
+                }
                 if (mounted) setError(err?.message || 'Failed to load users');
             } finally {
                 if (mounted) setLoading(false);

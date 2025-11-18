@@ -1,10 +1,13 @@
 package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.config.security.Roles;
+import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreatePageDTO;
 import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserCreateDTO;
 import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserPageDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.UserCreatePageDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
+import com.example.SlUniversityBackend.entity.Permission;
 import com.example.SlUniversityBackend.entity.Role;
 import com.example.SlUniversityBackend.entity.User;
 import com.example.SlUniversityBackend.entity.UserProfile;
@@ -76,9 +79,7 @@ public class SystemUserService {
             );
         } else {
             // All users excluding ROLE_USER
-            users = userRepository.findByRolesNotContaining(
-                    roleRepository.findByName(Roles.ROLE_USER),
-                    pageable);
+            users = userRepository.findAll(pageable);
         }
 
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
@@ -122,6 +123,17 @@ public class SystemUserService {
         return new SuccessDTO("System Users list",true, systemUserPageDTO);
     }
 
+    public UserCreatePageDTO userCreatePage(){
+        List<Role> allRoles = roleRepository.findAll();
+        List<UserCreatePageDTO.RoleItem> listOfItem = new ArrayList<>();
+
+        allRoles.forEach(role -> {
+            listOfItem.add(new UserCreatePageDTO.RoleItem(role.getId(),role.getName()));
+
+        });
+
+        return new UserCreatePageDTO(listOfItem);
+    }
 
     public SuccessDTO createSystemUser(SystemUserCreateDTO systemUserCreateDTO){
 
@@ -149,12 +161,15 @@ public class SystemUserService {
         user.setName(systemUserCreateDTO.getFirstName() + " " + systemUserCreateDTO.getLastName());
         user.setEmail(systemUserCreateDTO.getEmail());
         user.setContactNumber(systemUserCreateDTO.getContactNumber());
-        user.setStatus(systemUserCreateDTO.getStatus());
+        user.setStatus(systemUserCreateDTO.getStatus() == null || systemUserCreateDTO.getStatus());
+        user.setPassword(passwordEncoder.encode("User@1234"));
 
-        user.setPassword(passwordEncoder.encode(!systemUserCreateDTO.getPassword().isEmpty() ? systemUserCreateDTO.getPassword() : "Admin@1234"));
-        Role adminRole = roleRepository.findByName(Roles.ROLE_ADMIN);
         Set<Role> roles = new HashSet<>();
-        roles.add(adminRole);
+        systemUserCreateDTO.getRoles().forEach(id->{
+            roles.add(roleRepository.findById(id).get());
+
+        });
+
         user.setRoles(roles);
         user.setProfile(userProfile);
         userRepository.save(user);

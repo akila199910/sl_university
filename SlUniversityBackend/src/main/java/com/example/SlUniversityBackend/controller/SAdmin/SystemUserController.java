@@ -39,6 +39,11 @@ public class SystemUserController {
         return ResponseEntity.ok(systemUserService.getSystemUsers(pageable,search, role));
     }
 
+    @GetMapping("/create")
+    public ResponseEntity<SuccessDTO> createRole(){
+        return ResponseEntity.ok( new SuccessDTO("Roles",true,systemUserService.userCreatePage()));
+    }
+
     @PostMapping
     public ResponseEntity<SuccessDTO> createSystemUser(@Valid @RequestBody SystemUserCreateDTO systemUserCreateDTO){
         return ResponseEntity.status(HttpStatus.CREATED).body(systemUserService.createSystemUser(systemUserCreateDTO));

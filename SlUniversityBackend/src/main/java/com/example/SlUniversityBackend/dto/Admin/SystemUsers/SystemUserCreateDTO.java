@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.format.annotation.NumberFormat;
+
+import java.util.Set;
+
 import static org.springframework.format.annotation.NumberFormat.Style.NUMBER;
 
 @Data
@@ -25,10 +28,12 @@ public class SystemUserCreateDTO {
 
     @NotEmpty(message="Contact number is required.")
     @NumberFormat(style = NUMBER)
-    @Size(max = 15, message = "Contact number should be less than 30 characters.")
+    @Size(max = 10, message = "Contact number should be less than 10 characters.")
     private String contactNumber;
 
-    @NotEmpty(message = "Password is required.")
+    @NotEmpty(message="Select at least one role.")
+    private Set<Integer> roles;
+//    @NotEmpty(message = "Password is required.")
     @Size(max = 25, min = 8, message = "Password should be between 8 and 25 characters.")
     private String password;
 

@@ -93,17 +93,17 @@ public class RoleService {
         Map<String, List<RoleCreatePageDTO.PermissionActionDTO>> groupedPermissions = allPermissions.stream()
                 .filter(p -> p.getName().contains("_"))
                 .collect(Collectors.groupingBy(
-                        // Key: The topic (e.g., "ADMIN")
+
                         permission -> permission.getName().substring(0, permission.getName().indexOf("_")),
 
-                        // Value: A list of new PermissionActionDTOs
+
                         Collectors.mapping(
                                 permission -> {
                                     String name = permission.getName();
                                     String action = name.substring(name.indexOf("_") + 1);
                                     return new RoleCreatePageDTO.PermissionActionDTO(permission.getId(), formatActionName(action));
                                 },
-                                Collectors.toList() // Collect the DTOs into a list
+                                Collectors.toList()
                         )
                 ));
 
