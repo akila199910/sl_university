@@ -4,6 +4,7 @@ import TextFormInput from '@/components/Ui/Form/TextFormInput';
 import React, { useEffect, useState } from 'react'
 import { useParams } from "next/navigation";
 import PermissionCheckBox from '@/components/Ui/Form/PermissionCheckBox';
+import Link from 'next/link';
 
 type PermissionResponse = {
     topic: string,
@@ -99,14 +100,28 @@ const UpdateRole = () => {
         }
 
     return (
-        <div className='bg-amber-100 m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
-            <h1 className='text-2xl font-semibold mb-4'>UPDATE ROLE</h1>
-
+        <div className='m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
+    
             {loading && <p>Loading ...</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
 
             {!loading && !error &&
-                <>
+
+            
+                <div className='space-y-2 bg-white shadow-md rounded-lg p-6'>
+
+                    <div className='flex justify-between items-center'>
+                        <h1 className='text-2xl font-semibold mb-4'>UPDATE ROLE</h1>
+                        <div className="flex justify-end mb-2">
+                            <Link href="/roles" className="bg-blue-500 hover:bg-blue-600 text-white 
+                            py-1 sm:py-2 px-2 sm:px-4 rounded-md transition cursor-pointer"
+
+                            >
+                                Back
+                            </Link>
+                        </div>
+                    </div>
+
                     <form onSubmit={handleSubmit}>
                         <div className="grid gap-6 mb-6 md:grid-cols-2 md:w-2/3">
                             <TextFormInput htmlForAndId='role_name' labelNaame='Role Name' 
@@ -145,11 +160,11 @@ const UpdateRole = () => {
                         }
 
                         <div className='flex w-full justify-end my-4'>
-                            <button type="submit" className=" text-black box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs 
-                        font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none mr-4">Submit</button>
+                            <button type="submit" className=" text-white bg-blue-500 hover:bg-blue-600
+                        font-medium rounded-md text-sm px-4 py-2.5 mr-4 cursor-pointer">Submit</button>
                         </div>
                     </form>
-                </>
+                </div>
             }
         </div>
     )

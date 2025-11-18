@@ -55,24 +55,24 @@ const page = () => {
     return (
         <div className=' m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
 
-            <div className='flex justify-between items-center'>
-                <h1 className='text-2xl font-semibold mb-4'>VIEW ROLE</h1>
-                <div className="flex justify-end mb-2">
-                    <Link href="/roles" className="bg-blue-500 hover:bg-blue-600 text-white py-1 sm:py-2 px-2 sm:px-4 rounded-md transition"
-
-                    >
-                       Back
-                    </Link>
-                </div>
-            </div>
-
             {loading && <p>Loading ...</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}
 
             {!loading && !error &&
-                <div className='space-y-6'>
+                <div className='space-y-2 bg-white shadow-md rounded-lg p-6'>
 
-                    <div className="bg-white shadow-md rounded-lg p-6">
+                    <div className='flex justify-between items-center'>
+                        <h1 className='text-2xl font-semibold mb-4'>VIEW ROLE</h1>
+                        <div className="flex justify-end mb-2">
+                            <Link href="/roles" className="bg-blue-500 hover:bg-blue-600 text-white 
+                            py-1 sm:py-2 px-2 sm:px-4 rounded-md transition cursor-pointer"
+
+                            >
+                                Back
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="">
                         <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div>
                                 <dt className='text-sm font-medium text-gray-500'>Role Name</dt>
@@ -89,11 +89,12 @@ const page = () => {
                             </div>
                         </dl>
                     </div>
+                    <hr />
 
                     {/* --- Permissions Card --- */}
-                    <div className="bg-white shadow-md rounded-lg">
-                        <h2 className="text-xl font-semibold p-6 border-b border-gray-200 text-gray-900 uppercase">Permissions</h2>
-                        <div className="space-y-6 p-6">
+                    <div className="">
+                        <h2 className="text-xl font-semibold uppercase my-2">Permissions List</h2>
+                        <div className="">
                             {permissions.length > 0 ? (
                                 permissions.map((permission) => (
                                     <div key={permission.topic} className="pt-4 first:pt-0">
