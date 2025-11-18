@@ -3,6 +3,8 @@ import api from '@/app/lib/api'
 import PermissionCheckBox from '@/components/Ui/Form/PermissionCheckBox'
 import TextFormInput from '@/components/Ui/Form/TextFormInput'
 import Conform from '@/components/Ui/Helper/Conform'
+import SomeWrong from '@/components/Ui/Helper/SomeWrong'
+import { AxiosError } from 'axios'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
@@ -14,17 +16,22 @@ type PermissionResponse = {
         action: string
     }[]
 }
+
+type Validation = {
+    name: string
+}
 const AddRole = () => {
 
     const router = useRouter();
 
     const [permissions, setPermissions] = useState<PermissionResponse[]>([])
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<Validation | null>(null);
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
     const [roleName, setRoleName] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showSomethinWrong, setShowSomethinWrong]= useState(false);
 
     useEffect(
         () => {
@@ -37,8 +44,11 @@ const AddRole = () => {
                     setPermissions(response.data.data.permissions);
                     setLoading(false);
 
-                } catch (error) {
-                    setError(error instanceof Error ? error.message : "An unknown error occurred");
+                } catch (error:any) {
+                   
+                    if(error.status==500){
+                        setShowSomethinWrong(true)
+                    }
                     setLoading(false);
                 }
                 finally {
@@ -52,44 +62,42 @@ const AddRole = () => {
     const handleSubmit = async (e: React.FormEvent) => {
 
         e.preventDefault();
-        if (!roleName) {
-            setError("Role Name is required.");
-            return;
-        }
-        setError(null);
-        setShowConfirmModal(true); 
-        //
+        setValidationErrors(null);
+        setShowConfirmModal(true);
     }
 
     const handleConfirmSubmit = async () => {
         setIsSubmitting(true);
-        setError(null);
+        setValidationErrors(null);
         try {
-            await api.post("roles", {
+            const response = await api.post("roles", {
                 name: roleName,
                 permissions: selectedPermissions,
                 status: true
             });
-            
-            // Redirect on success
-            router.push(`/roles`);
+        
+            router.push(`/roles?success=true`);
+
             // router.push(`/roles?success=${encodeURIComponent(`Role "${roleName}" created successfully.`)}`);
-            
+
         } catch (err: any) {
-            console.error("Error creating role:", err);
-            setError(err instanceof Error ? err.message : "An unknown error occurred");
-            setIsSubmitting(false); 
-            setShowConfirmModal(false);
+
+            if(err.status == 500){
+                setShowSomethinWrong(true)
+
+            }else{
+                setValidationErrors(err.response.data.errors);
+                setIsSubmitting(false);
+                setShowConfirmModal(false);
+            }    
         }
     };
-
     return (
         <div className='m-2 p-2 rounded-2xl max-w-6xl mx-auto relative'>
 
             {loading && <p>Loading ...</p>}
-            {error && <p className='text-red-600'>Error: {error}</p>}
 
-            {!loading && !error &&
+            {!loading &&
                 <div className='space-y-2 bg-white shadow-md rounded-lg p-6'>
 
                     <div className='flex justify-between items-center'>
@@ -107,12 +115,15 @@ const AddRole = () => {
                     <form onSubmit={handleSubmit} className=''>
 
                         <div className="grid gap-6 mb-6 md:grid-cols-2 md:w-2/3">
-                            <TextFormInput htmlForAndId='role_name' labelNaame='Role Name'
-                                isRequired={false} placeHolder='Role Name'
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    setRoleName(e.target.value);
-                                    console.log(roleName);
-                                }} />
+                            <div className='flex flex-col'>
+                                <TextFormInput htmlForAndId='role_name' labelNaame='Role Name'
+                                    isRequired={false} placeHolder='Role Name'
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        setRoleName(e.target.value);
+                                    }} />
+
+                                {validationErrors?.name && (<span className='text-xs text-red-500 mt-1'>{validationErrors?.name}</span>)}
+                            </div>
                         </div>
 
                         <hr />
@@ -162,7 +173,12 @@ const AddRole = () => {
                     message="Are you sure you want to create this role?"
                 />
             )}
-            
+
+            {showSomethinWrong && (
+                <SomeWrong url="/roles"/>
+            )}
+
+
         </div>
     )
 }

@@ -3,6 +3,7 @@ import api from '@/app/lib/api';
 import { type Role } from '@/types/role';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from "next/navigation";
 import viewBlackIcon from '../../../../../../public/view-black.svg'
 import viewWhiteIcon from '../../../../../../public/view-white.svg'
 import ediBlackIcon from '../../../../../../public/edit-black.svg'
@@ -12,6 +13,7 @@ import deleteWhiteIcon from '../../../../../../public/delete-white.svg'
 import dropBlackIcon from '../../../../../../public/dropdown-black.svg'
 import dropWhiteIcon from '../../../../../../public/dropdown-white.svg'
 import Image from 'next/image';
+import AddRecord from '@/components/Ui/Helper/AddRecord';
 
 
 type RoleResponse = {
@@ -37,6 +39,9 @@ const RolePage = () => {
     const [totalPages, setTotalPages] = useState<number>(0);
     const [totalElements, setTotalElements] = useState<number>(0);
     const [canAdd, setCanAdd] = useState<boolean>(false);
+    const [recordAdd, setRecordAdd] = useState<boolean>(false);
+    const params = useSearchParams();
+    const router = useRouter();
 
 
     useEffect(() => {
@@ -107,6 +112,16 @@ const RolePage = () => {
         window.location.href=`/roles/update/${id}`;
     }
 
+    if(recordAdd){
+        setTimeout(() => setRecordAdd(false), 5000);
+
+    }
+    useEffect(() => {
+        if (params.get("success") === "true") {
+            router.replace("/roles", undefined); 
+        }
+    }, [params]);
+     
     return (
         <div className='bg-white shadow-md rounded-lg p-6 m-2 max-w-6xl mx-auto'>
             <h1 className='text-2xl font-semibold mb-4'>Roles Management</h1>
@@ -128,6 +143,9 @@ const RolePage = () => {
                                 </Link>
                             </div>
                         )
+                    }
+                    {
+                        recordAdd && <AddRecord/>
                     }
                     <div className='overflow-x-auto'>
                         <table className='table-auto w-full border-collapse border border-gray-300'>
