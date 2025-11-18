@@ -1,10 +1,10 @@
 import React from 'react'
 
-const AddRecord = () => {
+const AddRecord = ({message}:{message:string}) => {
   return (
-    <div className='py-2 text-green-400'>
-         <h1>
-            New Record Added Succuessfully.
+    <div className='py-2 text-green-800 bg-green-300 w-auto rounded-2xl inline-flex px-3 mb-2 font-medium'>
+         <h1 className='text-center'>
+           {message}
          </h1>
     </div>
   )

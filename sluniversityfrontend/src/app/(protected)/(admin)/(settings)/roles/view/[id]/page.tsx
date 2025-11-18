@@ -1,5 +1,6 @@
 "use client"
 import api from '@/app/lib/api';
+import SomeWrong from '@/components/Ui/Helper/SomeWrong';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
@@ -18,9 +19,10 @@ const page = () => {
 
     const [permissions, setPermissions] = useState<EoleResponseResponse[]>([])
     const [roleName, setRoleName] = useState<string>("");
+    const [status, setStatus] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [showSomethinWrong, setShowSomethinWrong] = useState(false);
     const { id } = useParams();
 
     useEffect(() => {
@@ -36,13 +38,17 @@ const page = () => {
                 if (mounted) {
                     setRoleName(res.data?.data?.roleName || "");
                     const permissionsData = res.data?.data?.permissions || [];
-                    console.log(permissionsData)
                     setPermissions(permissionsData)
+                    setStatus(res.data?.data?.status)
                 }
 
             } catch (err: any) {
-                console.error('Failed to load roles', err);
-                if (mounted) setError(err?.message || 'Failed to load users');
+                if (err.status == 500) {
+                    setShowSomethinWrong(true)
+                } else {
+                    if (mounted) setError(err?.message || 'Failed to load users');
+                }
+
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -82,9 +88,17 @@ const page = () => {
                             <div>
                                 <dt className='text-sm font-medium text-gray-500'>Status</dt>
                                 <dd className='mt-1'>
-                                    <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-0.5 text-sm font-medium text-green-800">
-                                        Active
-                                    </span>
+                                    {
+                                        status == true ? (<span className="inline-flex items-center rounded-full bg-green-100 px-3 py-0.5 text-sm font-medium text-green-800">
+                                            Active
+                                        </span>) :
+
+                                            (<span className="inline-flex items-center rounded-full bg-red-100 px-3 py-0.5 text-sm font-medium text-red-800">
+                                                Inactive
+                                            </span>)
+
+                                    }
+
                                 </dd>
                             </div>
                         </dl>
@@ -122,6 +136,10 @@ const page = () => {
                     </div>
                 </div>
             }
+
+            {showSomethinWrong && (
+                <SomeWrong url="/roles" />
+            )}
         </div>
     )
 }

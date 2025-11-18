@@ -40,6 +40,7 @@ const RolePage = () => {
     const [totalElements, setTotalElements] = useState<number>(0);
     const [canAdd, setCanAdd] = useState<boolean>(false);
     const [recordAdd, setRecordAdd] = useState<boolean>(false);
+    const [successMessage, setSuccessMessage] = useState<string>('')
     const params = useSearchParams();
     const router = useRouter();
 
@@ -114,12 +115,19 @@ const RolePage = () => {
 
     if(recordAdd){
         setTimeout(() => setRecordAdd(false), 5000);
-
     }
     useEffect(() => {
         if (params.get("success") === "true") {
+            setSuccessMessage('New Record Added Succuessfully.')
+            setRecordAdd(true)
             router.replace("/roles", undefined); 
         }
+        if (params.get("success_update") === "true") {
+            setSuccessMessage('Record Updated Succuessfully.')
+            setRecordAdd(true)
+            router.replace("/roles", undefined); 
+        }
+
     }, [params]);
      
     return (
@@ -145,7 +153,7 @@ const RolePage = () => {
                         )
                     }
                     {
-                        recordAdd && <AddRecord/>
+                        recordAdd && <AddRecord message={successMessage}/>
                     }
                     <div className='overflow-x-auto'>
                         <table className='table-auto w-full border-collapse border border-gray-300'>
@@ -169,9 +177,9 @@ const RolePage = () => {
                                             })}</td>
                                             <td className='border border-gray-300 px-4 py-2'>
                                                 {r.status ? (
-                                                    <span className='text-green-700'>Active</span>
+                                                    <span className='text-green-700 bg-green-300 px-2 rounded-sm py-1'>Active</span>
                                                 ) : (
-                                                    <span className='text-gray-600'>Inactive</span>
+                                                    <span className='text-red-700 bg-red-300 px-2 rounded-sm py-1'>Inactive</span>
                                                 )}
                                             </td>
                                             <td className='border border-gray-300 px-4 py-2'>

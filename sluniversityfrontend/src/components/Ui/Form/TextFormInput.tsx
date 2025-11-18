@@ -6,7 +6,8 @@ interface TextFormInputProps {
     htmlForAndId: string;
     isRequired?: boolean;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    value?:string
+    value?:string,
+    readOnly?:boolean
 }
 
 const TextFormInput = (TextFormInputProps:TextFormInputProps) => {
@@ -19,6 +20,7 @@ const TextFormInput = (TextFormInputProps:TextFormInputProps) => {
             placeholder={TextFormInputProps.placeHolder} required={TextFormInputProps.isRequired}
             onChange={TextFormInputProps.onChange}
             value={TextFormInputProps.value}
+            readOnly={TextFormInputProps.readOnly}
              />
         </div>
     )

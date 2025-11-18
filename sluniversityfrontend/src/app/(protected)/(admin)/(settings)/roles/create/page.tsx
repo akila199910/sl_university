@@ -78,8 +78,6 @@ const AddRole = () => {
         
             router.push(`/roles?success=true`);
 
-            // router.push(`/roles?success=${encodeURIComponent(`Role "${roleName}" created successfully.`)}`);
-
         } catch (err: any) {
 
             if(err.status == 500){
@@ -177,8 +175,6 @@ const AddRole = () => {
             {showSomethinWrong && (
                 <SomeWrong url="/roles"/>
             )}
-
-
         </div>
     )
 }

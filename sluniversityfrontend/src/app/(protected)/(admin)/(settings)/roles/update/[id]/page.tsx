@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import PermissionCheckBox from '@/components/Ui/Form/PermissionCheckBox';
 import Link from 'next/link';
 import Conform from '@/components/Ui/Helper/Conform';
+import SomeWrong from '@/components/Ui/Helper/SomeWrong';
+import { RadioButton } from '@/components/Ui/Form/RadioButton';
 
 type PermissionResponse = {
     topic: string,
@@ -21,12 +23,15 @@ const UpdateRole = () => {
 
     const router = useRouter();
         const [permissions, setPermissions] = useState<PermissionResponse[]>([])
+        const [status, setStatus] = useState<boolean>(true);
         const [roleName, setRoleName] = useState<string>("");
         const [loading, setLoading] = useState<boolean>(true);
-        const [error, setError] = useState<string | null>(null);
+        // const [error, setError] = useState<string | null>(null);
         const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [showConfirmModal, setShowConfirmModal] = useState(false);
+        const [showSomethinWrong, setShowSomethinWrong]= useState(false);
+        
         
         const { id } = useParams();
 
@@ -34,7 +39,6 @@ const UpdateRole = () => {
         let mounted = true;
         async function load() {
             setLoading(true);
-            setError(null);
 
             try {
                 const res = await api.get(`/roles/${id}`);
@@ -52,11 +56,12 @@ const UpdateRole = () => {
                         });
                     });
                     setSelectedPermissions(selected);
-                    
+                    setStatus(res.data?.data.status)
                 }
             } catch (err: any) {
-                console.error('Failed to load roles', err);
-                if (mounted) setError(err?.message || 'Failed to load users');
+                if(err.status == 500){
+                    setShowSomethinWrong(true)
+                }
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -81,7 +86,7 @@ const UpdateRole = () => {
    const handleSubmit = async (e: React.FormEvent) => {
    
            e.preventDefault();
-           setError(null);
+           
            setShowConfirmModal(true); 
         
        }
@@ -89,19 +94,23 @@ const UpdateRole = () => {
     const handleConfirmSubmit = async () => {
 
         setIsSubmitting(true);
-        setError(null);
 
         try {
-            await api.put(`roles/${id}`, {
+
+            const response = await api.put(`roles/${id}`, {
                 permissions: selectedPermissions,
+                status:status
             });
             
-            router.push(`/roles`);
-            // router.push(`/roles?success=${encodeURIComponent(`Role "${roleName}" created successfully.`)}`);
+           router.push(`/roles?success_update=true`);
             
         } catch (err: any) {
-            console.error("Error creating role:", err);
-            setError(err instanceof Error ? err.message : "An unknown error occurred");
+
+            if(err.status==500){
+
+                setShowSomethinWrong(true)
+            }
+            setLoading(false);
             setIsSubmitting(false); 
             setShowConfirmModal(false);
         }
@@ -112,11 +121,9 @@ const UpdateRole = () => {
         <div className='m-2 p-2 rounded-2xl max-w-6xl mx-auto'>
     
             {loading && <p>Loading ...</p>}
-            {error && <p className='text-red-600'>Error: {error}</p>}
 
-            {!loading && !error &&
+            {!loading &&
 
-            
                 <div className='space-y-2 bg-white shadow-md rounded-lg p-6'>
 
                     <div className='flex justify-between items-center'>
@@ -139,6 +146,7 @@ const UpdateRole = () => {
                             setRoleName(e.target.value) 
                             }} 
                             value={roleName}
+                            readOnly={true}
                             />
                         </div>
 
@@ -168,6 +176,12 @@ const UpdateRole = () => {
                             ))
                         }
 
+                        <div>
+                            <RadioButton isCheck={status} onClick={(e:React.MouseEvent<HTMLInputElement>) =>{
+                            setStatus(!status)
+                            }}/>
+                        </div>
+
                         <div className='flex w-full justify-end my-4'>
                             <button type="submit" className=" text-white bg-blue-500 hover:bg-blue-600
                         font-medium rounded-md text-sm px-4 py-2.5 mr-4 cursor-pointer">Submit</button>
@@ -183,6 +197,9 @@ const UpdateRole = () => {
                     onConfirm={handleConfirmSubmit}
                     message="Are you sure you want to Update this role?"
                 />
+            )}
+            {showSomethinWrong && (
+                <SomeWrong url="/roles"/>
             )}
         </div>
     )
