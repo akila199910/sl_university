@@ -111,7 +111,6 @@ const RolePage = () => {
     }
 
     const clickEdit = (id:string)=>{
-        console.log("Edit role with id: ", id);
         window.location.href=`/roles/update/${id}`;
     }
 

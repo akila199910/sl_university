@@ -55,7 +55,6 @@ const UserCreate = () => {
         try {
           const response = await api.get("system_users/create");
           const data = response.data
-          console.log(data.data.roles)
           setRoles(data.data.roles);
           setLoading(false);
 

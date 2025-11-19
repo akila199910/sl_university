@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
-type EoleResponseResponse = {
+type RoleResponseResponse = {
     topic: string,
     actions: {
         id: number,
@@ -17,7 +17,7 @@ type EoleResponseResponse = {
 
 const page = () => {
 
-    const [permissions, setPermissions] = useState<EoleResponseResponse[]>([])
+    const [permissions, setPermissions] = useState<RoleResponseResponse[]>([])
     const [roleName, setRoleName] = useState<string>("");
     const [status, setStatus] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(true);

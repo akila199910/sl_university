@@ -33,11 +33,9 @@ api.interceptors.response.use(
   async (error) => {
     // Any status codes that fall outside the range of 2xx cause this function to trigger
     const originalRequest = error.config;
-    console.log("API Error:", originalRequest);
 
     // Check if the error is 401 (Unauthorized) and it's not a retry request
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log("401 detected, attempting token refresh...");
       if (isRefreshing) {
         // If we are already refreshing, push this request to the queue
         return new Promise((resolve, reject) => {
@@ -65,11 +63,10 @@ api.interceptors.response.use(
         
         // This means the refresh token is also bad.
         // We must log the user out.
-        console.error("Session expired. Logging out.");
 
         // Here you would trigger a logout (e.g., clear user state)
         // and redirect to the login page.
-        // window.location.href = '/login'; 
+        window.location.href = '/login'; 
         
         return Promise.reject(refreshError);
       } finally {
