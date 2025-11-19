@@ -30,7 +30,6 @@ const page = () => {
     const [error, setError] = useState<string | null>(null);
     const [showSomethinWrong, setShowSomethinWrong] = useState(false);
     const [user, setUser] = useState<UserResponse | null>(null);
-    const [roleIds, setRoleIds] = useState<number[]>([]);
     const [formData, setFormData] = useState<{ roleids: number[], status: boolean }>({
         roleids: [],
         status: false,
@@ -72,7 +71,6 @@ const page = () => {
                     const selectedRoleIds = userRes.roles
                         .filter((r: any) => r.select)
                         .map((r: any) => r.id);
-                    setRoleIds(selectedRoleIds);
 
                     setFormData({
                         roleids: selectedRoleIds,
@@ -233,7 +231,7 @@ const page = () => {
                                         user.roles.map((r) => {
                                             return (
                                                 <PermissionCheckBox labelName={r.name} htmlForAndId={r.name + r.id} permissionId={r.id.toString()}
-                                                    checked={roleIds.includes(r.id)} onChange={() => { handleRoleToggle(r.id) }}
+                                                    checked={formData.roleids.includes(r.id)} onChange={() => { handleRoleToggle(r.id) }}
                                                     key={r.id} />
                                             )
 
