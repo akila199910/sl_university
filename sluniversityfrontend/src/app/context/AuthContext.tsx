@@ -2,10 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import api from '../lib/api';
 
-type Role ={
-  id: number;
-  name: string;
-}
 interface User {
     id: number;
     name: string;
@@ -80,9 +76,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await api.post('/auth/logout');
-    setUser(null);
-    
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      // Redirect to login after logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
   };
 
   // Provide the state and functions to the rest of the app
