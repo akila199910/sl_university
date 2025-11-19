@@ -1,6 +1,7 @@
 package com.example.SlUniversityBackend.controller.SAdmin;
 
 import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserCreateDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserUpdateDTO;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.service.SAdmin.SystemUserService;
 import jakarta.validation.Valid;
@@ -54,13 +55,13 @@ public class SystemUserController {
         return ResponseEntity.ok(systemUserService.getSystemUserById(id));
     }
 
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<SuccessDTO> updateAdmin(@PathVariable Integer id, @Valid @RequestBody AdminUpdateReqDTO adminUpdateReqDTO){
-//        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.updateAdmin(id, adminUpdateReqDTO));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<SuccessDTO> deleteAdmin(@PathVariable Integer id){
-//        return ResponseEntity.status(HttpStatus.ACCEPTED).body(adminService.deleteAdmin(id));
-//    }
+    @GetMapping("/update/{id}")
+    public ResponseEntity<SuccessDTO> userUpdatePage(@PathVariable Integer id){
+        return ResponseEntity.ok(new SuccessDTO("Update page.",true, systemUserService.getUpdatePage(id),systemUserService.getUpdatePage(id).isCanUpdate()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SuccessDTO> updateSystemUser(@PathVariable Integer id, @Valid @RequestBody SystemUserUpdateDTO systemUserUpdateDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(systemUserService.updateSystemUser(id,systemUserUpdateDTO));
+    }
 }

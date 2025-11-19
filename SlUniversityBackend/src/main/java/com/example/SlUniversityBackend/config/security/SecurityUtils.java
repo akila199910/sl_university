@@ -66,4 +66,24 @@ public class SecurityUtils {
         return result;
     }
 
+    public static boolean checkPermission(String permission) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean result = false;
+
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return result;
+        }
+
+        Set<String> authorities = authentication.getAuthorities().stream()
+                .map(auth -> auth.getAuthority().toUpperCase())
+                .collect(Collectors.toSet());
+
+        if(authorities.contains(permission.toUpperCase())){
+            result = true;
+        }
+
+        return result;
+    }
+
 }

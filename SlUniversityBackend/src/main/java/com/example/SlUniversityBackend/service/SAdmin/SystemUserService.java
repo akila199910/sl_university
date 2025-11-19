@@ -2,9 +2,8 @@ package com.example.SlUniversityBackend.service.SAdmin;
 
 import com.example.SlUniversityBackend.config.security.Roles;
 import com.example.SlUniversityBackend.dto.Admin.Roles.RoleCreatePageDTO;
-import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserCreateDTO;
-import com.example.SlUniversityBackend.dto.Admin.SystemUsers.SystemUserPageDTO;
-import com.example.SlUniversityBackend.dto.Admin.SystemUsers.UserCreatePageDTO;
+import com.example.SlUniversityBackend.dto.Admin.Roles.RoleUpdatePageDTO;
+import com.example.SlUniversityBackend.dto.Admin.SystemUsers.*;
 import com.example.SlUniversityBackend.dto.SuccessDTO;
 import com.example.SlUniversityBackend.dto.User.UserResponseDTO;
 import com.example.SlUniversityBackend.entity.Permission;
@@ -29,6 +28,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.SlUniversityBackend.config.security.Permissions.*;
+import static com.example.SlUniversityBackend.config.security.Permissions.ROLE_DELETE;
+import static com.example.SlUniversityBackend.config.security.SecurityUtils.checkPermission;
 
 @Service
 public class SystemUserService {
@@ -211,74 +214,92 @@ public class SystemUserService {
         }
     }
 
-//    public SuccessDTO updateAdmin(Integer id, AdminUpdateReqDTO adminUpdateReqDTO){
-//        User u = userRepository.findById(id)
-//                .orElseThrow(()-> new NotFoundException(Map.of(
-//                        "userId", "No user found with ID " + id),
-//                        "User not found.",
-//                        false)
-//                );
-//
-//        Map<String, String> body = new HashMap<>();
-//
-//        if (adminUpdateReqDTO.getEmail() != null) {
-//            boolean emailExists = userRepository.existsByEmailAndIdNot(adminUpdateReqDTO.getEmail(), id);
-//            if (emailExists) {
-//                body.put("email", "Email is already taken.");
-//            }
-//        }
-//
-//        if (adminUpdateReqDTO.getContactNumber() != null) {
-//            boolean contactExists = userRepository.existsByContactNumberAndIdNot(adminUpdateReqDTO.getContactNumber(), id);
-//            if (contactExists) {
-//                body.put("contactNumber", "Contact number is already taken.");
-//            }
-//        }
-//
-//
-//        if (!body.isEmpty()) {
-//            throw new DuplicateFieldException(body, "Duplicated unique values", false);
-//        }
-//
-//        if (adminUpdateReqDTO.getFirstName() != null) {
-//            u.setFirstName(adminUpdateReqDTO.getFirstName());
-//            u.setName(adminUpdateReqDTO.getFirstName() + " " +
-//                    (adminUpdateReqDTO.getLastName() != null ? adminUpdateReqDTO.getLastName() : u.getLastName()));
-//        }
-//
-//        if (adminUpdateReqDTO.getLastName() != null) {
-//            u.setLastName(adminUpdateReqDTO.getLastName());
-//            u.setName((adminUpdateReqDTO.getFirstName() != null ? adminUpdateReqDTO.getFirstName() : u.getFirstName())
-//                    + " " + adminUpdateReqDTO.getLastName());
-//        }
-//
-//        if (adminUpdateReqDTO.getEmail() != null) {
-//            u.setEmail(adminUpdateReqDTO.getEmail());
-//        }
-//
-//        if (adminUpdateReqDTO.getContactNumber() != null) {
-//            u.setContactNumber(adminUpdateReqDTO.getContactNumber());
-//        }
-//
-//        if (adminUpdateReqDTO.getStatus() != null) {
-//            u.setStatus(adminUpdateReqDTO.getStatus());
-//        }
-//
-//        userRepository.save(u);
-//
-//        return new SuccessDTO("Admin updated successfully.", true, null);
-//    }
+    public UserUpdatePageDTO getUpdatePage(Integer id){
+
+        boolean canUpdate = false;
+        boolean checkList =  checkPermission(USER_UPDATE);
+        if(checkList){
+            canUpdate = true;
+        }
+
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+
+        List<Integer> userRoleIds = u.getRoles().stream()
+                .map(Role::getId)
+                .toList();
+
+        List<Role> allRoles = roleRepository.findAll();
+
+        List<UserUpdatePageDTO.RoleDTO> roleDTOList = new ArrayList<>();
+
+        allRoles.forEach(role -> {
+            boolean select = false;
+            if(userRoleIds.contains(role.getId())){
+                select = true;
+            }
+            roleDTOList.add(new UserUpdatePageDTO.RoleDTO(role.getId(),role.getName(),select));
+        });
 
 
-//    public SuccessDTO deleteAdmin(Integer id){
-//        User u = userRepository.findById(id)
-//                .orElseThrow(()-> new NotFoundException(Map.of(
-//                        "userId", "No user found with ID " + id),
-//                        "User not found.",
-//                        false)
-//                );
-//        userRepository.delete(u);
-//        return new SuccessDTO("Admin delete successfully.", true, null);
-//    }
+
+        UserUpdatePageDTO userUpdatePageDTO = new UserUpdatePageDTO();
+        userUpdatePageDTO.setContactNumber(u.getContactNumber());
+        userUpdatePageDTO.setEmail(u.getEmail());
+        userUpdatePageDTO.setId(u.getId());
+        userUpdatePageDTO.setFirstName(u.getFirstName());
+        userUpdatePageDTO.setLastName(u.getLastName());
+        userUpdatePageDTO.setProfile(u.getProfile().getProfileUrl());
+        userUpdatePageDTO.setStatus(u.getStatus());
+        userUpdatePageDTO.setCanUpdate(canUpdate);
+        userUpdatePageDTO.setRoles(roleDTOList);
+
+        return userUpdatePageDTO;
+
+    }
+
+    public SuccessDTO updateSystemUser(Integer id,  SystemUserUpdateDTO systemUserUpdateDTO){
+
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+
+        if (systemUserUpdateDTO.getStatus() != null) {
+            u.setStatus(systemUserUpdateDTO.getStatus());
+        }
+
+        List<Integer> roleIdsToSet = systemUserUpdateDTO.getRoleIds();
+
+        Set<Role> updatedRoles = roleIdsToSet.stream()
+                .map(roleRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+                u.setRoles(updatedRoles);
+
+                userRepository.save(u);
+
+        return new SuccessDTO("System User updated successfully.", true, null);
+    }
+
+
+    public SuccessDTO deleteAdmin(Integer id){
+        User u = userRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(Map.of(
+                        "userId", "No user found with ID " + id),
+                        "User not found.",
+                        false)
+                );
+        userRepository.delete(u);
+        return new SuccessDTO("Admin delete successfully.", true, null);
+    }
 
 }
