@@ -26,7 +26,6 @@ const UpdateRole = () => {
         const [status, setStatus] = useState<boolean>(true);
         const [roleName, setRoleName] = useState<string>("");
         const [loading, setLoading] = useState<boolean>(true);
-        // const [error, setError] = useState<string | null>(null);
         const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -83,7 +82,7 @@ const UpdateRole = () => {
     });
    }
 
-   const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
    
            e.preventDefault();
            

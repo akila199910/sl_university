@@ -224,7 +224,7 @@ const UsersPage = () => {
                                                 {u.editUrl != null && (
                                                     <button
                                                         className=' bg-blue-500 text-white rounded mr-1 hover:bg-blue-600'
-                                                        onClick={()=>{window.location.href=`/roles/update/${u.id.toString()}`}}
+                                                        onClick={()=>{window.location.href=`/users/update/${u.id.toString()}`}}
                                                     >
                                                     <Image src={ediBlackIcon} alt="pencil" />
                                                     </button>
