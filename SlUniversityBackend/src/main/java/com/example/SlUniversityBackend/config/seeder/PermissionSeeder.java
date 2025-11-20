@@ -21,11 +21,6 @@ public class PermissionSeeder implements CommandLineRunner {
 
     private static final List<String> ALL_PERMISSIONS = Arrays.asList(
 
-            Permissions.ADMIN_READ,
-            Permissions.ADMIN_CREATE,
-            Permissions.ADMIN_UPDATE,
-            Permissions.ADMIN_DELETE,
-
             Permissions.ROLE_READ,
             Permissions.ROLE_CREATE,
             Permissions.ROLE_UPDATE,

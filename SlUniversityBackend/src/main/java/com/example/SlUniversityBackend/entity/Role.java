@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -49,8 +48,10 @@ public class Role {
         updatedAt = LocalDateTime.now();
     }
 
-    public Role(String name) {
+    public Role(String name, Boolean status ) {
         this.name = name;
+        this.status = status;
+
     }
 
     // Necessary for proper Set comparison

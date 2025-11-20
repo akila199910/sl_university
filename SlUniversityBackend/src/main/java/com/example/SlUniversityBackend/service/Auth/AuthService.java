@@ -93,7 +93,7 @@ public class AuthService {
         user.setStatus(adminReqDTO.getStatus());
         user.setPassword(passwordEncoder.encode(adminReqDTO.getPassword()));
         Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.findByName(Roles.ROLE_ADMIN));
+//        roles.add(roleRepository.findByName(Roles.ROLE_ADMIN));
         user.setRoles(roles);
         user.setProfile(userProfile);
         userRepository.save(user);

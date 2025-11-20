@@ -40,7 +40,7 @@ public class SuperAdminSeeder {
         // 2) Ensure role exists
         Role superAdmin = roles.findByName("ROLE_SUPER_ADMIN");
         if (superAdmin == null) {
-            superAdmin = roles.save(new Role("ROLE_SUPER_ADMIN"));
+            superAdmin = roles.save(new Role("ROLE_SUPER_ADMIN",true));
         }
 
         // 3) Build UserProfile but DON'T save separately (cascades from User)
@@ -57,14 +57,11 @@ public class SuperAdminSeeder {
         user.setContactNumber("0702024999"); // string if your field is String
         user.setStatus(true);
         user.setPassword(encoder.encode("Admin@1234"));
-
         Set<Role> rs = new HashSet<>();
         rs.add(superAdmin);
         user.setRoles(rs);
+        user.setProfile(profile);
 
-        user.setProfile(profile);    // profile cascades
-
-        // 5) Save once
         users.save(user);
 
         System.out.println("✅ Super Admin seeded.");

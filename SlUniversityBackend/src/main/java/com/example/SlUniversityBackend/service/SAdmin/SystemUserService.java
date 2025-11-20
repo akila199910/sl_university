@@ -60,28 +60,40 @@ public class SystemUserService {
         boolean hasSearch = search != null && !search.trim().isEmpty();
         boolean hasRole = role != null && !role.trim().isEmpty();
 
+        Role specificRole = null;
+        if (hasRole) {
+            try {
+                int roleId = Integer.parseInt(role);
+                Optional<Role> specificRoleOpt = roleRepository.findById(roleId);
+
+                if (specificRoleOpt.isPresent()) {
+                    specificRole = specificRoleOpt.get();
+                } else {
+                    hasRole = false;
+                }
+            } catch (NumberFormatException e) {
+                hasRole = false;
+            }
+        }
+
         if (hasSearch && hasRole) {
-            users = userRepository.findByNameContainingIgnoreCaseAndRolesNotContaining(
+            users = userRepository.findByNameContainingIgnoreCaseAndRoles(
                     search,
-                    roleRepository.findById(Integer.parseInt(role)),
-                    roleRepository.findByName(Roles.ROLE_USER),
+                    specificRole,
                     pageable
             );
         } else if (hasSearch) {
-            // Only users whose name contains search, excluding ROLE_USER
-            users = userRepository.findByNameContainingIgnoreCaseAndRolesNotContaining(
+            users = userRepository.findByNameContainingIgnoreCase(
                     search,
-                    roleRepository.findByName(Roles.ROLE_USER),
                     pageable
             );
         } else if (hasRole) {
-            // Only users with the selected role, excluding ROLE_USER
+
             users = userRepository.findByRoles(
-                    roleRepository.findById(Integer.parseInt(role)),
+                    Optional.of(specificRole),
                     pageable
             );
         } else {
-            // All users excluding ROLE_USER
             users = userRepository.findAll(pageable);
         }
 

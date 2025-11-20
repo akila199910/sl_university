@@ -13,12 +13,13 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
     boolean existsByContactNumber(String contactNumber);
-//    boolean existsByEmailAndIdNot(String email, Integer id);
-//    boolean existsByContactNumberAndIdNot(String contactNumber, Integer id);
+
 
     Optional<User> findByEmail(String email);
-    Page<User> findByNameContainingIgnoreCaseAndRolesNotContaining(String search, Role name, Pageable pageable);
-    Page<User> findByNameContainingIgnoreCaseAndRolesNotContaining(String search, Optional<Role> role, Role name, Pageable pageable);
-    Page<User> findByRolesNotContaining(Role byName,  Pageable pageable);
+
     Page<User> findByRoles(Optional<Role> byName, Pageable pageable);
+
+    Page<User> findByNameContainingIgnoreCase(String search, Pageable pageable);
+
+    Page<User> findByNameContainingIgnoreCaseAndRoles(String search, Role specificRole, Pageable pageable);
 }
