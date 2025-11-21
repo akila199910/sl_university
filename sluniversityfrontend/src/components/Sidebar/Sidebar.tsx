@@ -42,7 +42,7 @@ const Sidebar = ({ isExpanded }: { isExpanded: boolean }) => {
 
               {sidebarLink.subLinks && (
                 <div
-                  className={`bg-amber-50 mb-2 rounded-md transition-all duration-500 ease-in-out ${openSublinks.includes(sidebarLink.id)
+                  className={` mb-2 rounded-md transition-all duration-500 ease-in-out ${openSublinks.includes(sidebarLink.id)
                       ? "max-h-40 opacity-100"
                       : "max-h-0 opacity-0"
                     }`}

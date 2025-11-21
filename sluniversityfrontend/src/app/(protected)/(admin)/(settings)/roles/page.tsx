@@ -132,8 +132,8 @@ const RolePage = () => {
     }, [params]);
      
     return (
-        <div className='bg-white shadow-md rounded-lg p-6 m-2 max-w-6xl mx-auto'>
-            <h1 className='text-2xl font-semibold mb-4'>Roles Management</h1>
+        <div className='bg-white shadow-md rounded-lg max-w-6xl mx-auto'>
+            <h1 className='text-2xl font-semibold px-2'>Roles Management</h1>
 
             {loading && <p>Loading Roles...</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}

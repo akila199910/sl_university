@@ -71,6 +71,7 @@ const UsersPage = () => {
                 if (err.status == 500) {
                     setShowSomethinWrong(true)
                 }
+                console.log(err)
                 if (mounted) setError(err?.message || 'Failed to load users');
             } finally {
                 if (mounted) setLoading(false);
@@ -131,8 +132,8 @@ const UsersPage = () => {
     }, [params]);
 
     return (
-        <div className='bg-white shadow-md rounded-lg p-6 m-2 max-w-6xl mx-auto'>
-            <h1 className='text-2xl font-semibold mb-4'>Users Management</h1>
+        <div className='bg-white shadow-md rounded-lg max-w-6xl mx-auto'>
+            <h1 className='text-2xl font-semibold px-2'>Users Management</h1>
 
             {loading && <p>Loading users…</p>}
             {error && <p className='text-red-600'>Error: {error}</p>}

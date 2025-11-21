@@ -9,7 +9,7 @@ import rolesBlack from './icons/roles-black.svg';
 
 const sidebarLinks = [
     { id: 1, name: 'Dashboard', link: '/dashboard' , icon: dashboardBlack},
-    { id: 2, name: 'Profile', link: '/profile' , icon: profileBlack},
+    { id: 2, name: 'Profile', link: '/my-profile' , icon: profileBlack},
     { id: 3, name: 'Settings', link: '/settings', icon: settingsBlack, multy: true, 
         subLinks: [
             { id: 1, name: 'Admins', link: '/admins', icon: adminsBlack },
@@ -31,7 +31,7 @@ const sidebarLinks = [
             { id: 1, name: 'Admins', link: '/admins', icon: defaultBlack },
             { id: 2, name: 'Users', link: '/users', icon: defaultBlack },
         ]},
-    { id: 8, name: 'Profile', link: '/profile' , icon: defaultBlack},
+    { id: 8, name: 'Profile', link: '/my-profile' , icon: defaultBlack},
     { id: 9, name: 'Settings', link: '/settings', icon: defaultBlack },
     { id: 10, name: 'Help', link: '/help', icon: defaultBlack },
     { id: 11, name: 'About', link: '/about', icon: defaultBlack },
