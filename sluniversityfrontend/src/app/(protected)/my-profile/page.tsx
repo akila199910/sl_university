@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import coverImage from '../../images/cover.png'
 import DummyImage from '../../images/dammyUser.png'
 import ConformationModel from '@/components/Models/ConformationModel';
+import SuccessModel from '@/components/Models/SuccessModel';
 
 interface User {
     id: number | undefined;
@@ -31,6 +32,8 @@ const MyProfile = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [validationErrors, setValidaationErrors] = useState<vaildationErrors|null>(null);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
 
     useEffect(() => {
         const checkUserStatus = async () => {
@@ -82,7 +85,8 @@ const MyProfile = () => {
             setIsSaving(true);
             const response = await api.post("/my-profile",user)
             if(response.data.success){
-                
+                console.log("change this")
+                setIsSuccessModalOpen(true)
             }
         }catch (err: any) {
 
@@ -96,6 +100,10 @@ const MyProfile = () => {
         }
       };
 
+    const handleSuccess = ()=>{
+        setIsSuccessModalOpen(false)
+        window.location.href = '/my-profile';
+    }
 
     if (isLoading) {
         return (
@@ -128,7 +136,6 @@ const MyProfile = () => {
                             className='object-cover w-full h-full absolute inset-0'
                         />
 
-                        {/* Cover Image Upload Button (Top Right) */}
                         <div className="absolute top-4 right-4 z-10">
                             <input type="file" id="file-cover" className="hidden" />
                             <label
@@ -149,10 +156,8 @@ const MyProfile = () => {
                         </div>
                     </div>
 
-                    {/* 2. Profile Details Section (Overlapping) */}
                     <div className='px-6 pt-2 pb-8'>
 
-                        {/* Profile Picture and Name Row */}
                         <div className='-mt-20 flex flex-col sm:flex-row justify-between items-start sm:items-end'>
 
                             {/* Profile Picture and Upload Button */}
@@ -187,23 +192,18 @@ const MyProfile = () => {
                             </div>
                         </div>
 
-                        {/* 3. Form Grid for Editable Details */}
                         <div className='mt-10 pt-4 border-t border-gray-200'>
                             <h2 className='text-xl font-semibold text-gray-800 mb-4'>Personal Information</h2>
 
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-w-4xl'>
 
-                                {/* First Name */}
                                 {renderInput('firstName', 'First Name', 'text', user?.firstName ?? '', handleChange, false, validationErrors?.firstName)}
 
-                                {/* Last Name */}
                                 {renderInput('lastName', 'Last Name', 'text', user?.lastName ?? '', handleChange, false, validationErrors?.lastName)
                                 }
 
-                                {/* Email */}
                                 {renderInput('email', 'Email Address (Read Only)', 'email', user?.email ?? '', handleChange, true)}
 
-                                {/* Contact Number */}
                                 {renderInput('contactNumber', 'Contact Number', 'tel', user?.contactNumber ?? '', handleChange, false, validationErrors?.contactNumber)}
 
                             </div>
@@ -232,6 +232,13 @@ const MyProfile = () => {
                     onConfirm={handleConfirmAction}
                     title="Are You Sure?"
                     message="After Conform This,  Your Personal Data Update."
+                />
+
+            <SuccessModel 
+                    isOpen={isSuccessModalOpen} 
+                    onConfirm={handleSuccess}
+                    title="SUCCESS"
+                    message="Profile Data Updated Successfully."
                 />
         </>
 

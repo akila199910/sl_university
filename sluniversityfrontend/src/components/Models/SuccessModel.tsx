@@ -3,7 +3,6 @@ import React from 'react'
 interface ConformationModelProps {
    
     isOpen: boolean;
-    onClose: () => void;
     onConfirm: () => void;
     title: string;
     message: string;
@@ -12,7 +11,6 @@ interface ConformationModelProps {
 
 const SuccessModel: React.FC<ConformationModelProps> = ({
     isOpen,
-    onClose,
     onConfirm,
     title,
     message,
@@ -28,7 +26,6 @@ const SuccessModel: React.FC<ConformationModelProps> = ({
     return (
         <div 
             className='fixed inset-0  bg-opacity-10 w-screen h-screen flex justify-center items-center z-10 transition-opacity duration-500'
-            onClick={onClose}
         >
             {/* Modal Content Box */}
             <div 
@@ -36,12 +33,15 @@ const SuccessModel: React.FC<ConformationModelProps> = ({
                 onClick={(e) => e.stopPropagation()} // Prevents closing when clicking on the modal content
             >
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-                </div>
+                <h3
+                    className={`text-xl font-semibold ${!isDestructive ? "text-green-900" : "text-red-700"} px-5 py-2`}
+                    >
+                    {title}
+                </h3>
+
 
                 {/* Body */}
-                <div className="p-6">
+                <div className="p-2 mt-2">
                     <p className="text-sm text-gray-700">{message}</p>
                 </div>
 
