@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import api from '@/app/lib/api';
 import React, { useEffect, useState } from 'react'
 import coverImage from '../../images/cover.png'
@@ -17,13 +18,19 @@ interface User {
     contactNumber: string
 }
 
+type vaildationErrors ={
+    firstName:string | null,
+    lastName:string| null,
+    contactNumber:string | null
+}
 const MyProfile = () => {
 
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string|null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [validationErrors, setValidaationErrors] = useState<vaildationErrors|null>(null);
 
     useEffect(() => {
         const checkUserStatus = async () => {
@@ -73,13 +80,19 @@ const MyProfile = () => {
         try{
 
             setIsSaving(true);
-
             const response = await api.post("/my-profile",user)
+            if(response.data.success){
+                
+            }
+        }catch (err: any) {
 
+            if (err.response?.data?.errors) {
+                setValidaationErrors(err.response.data.errors);
+            } else {
+                setError(err.message || "Something Went Wrong");
+            }
+        }finally{
             setIsSaving(false);
-
-        }catch{
-
         }
       };
 
@@ -110,7 +123,7 @@ const MyProfile = () => {
                     <div className='relative h-48 sm:h-64 rounded-t-xl overflow-hidden'>
 
                         <img
-                            src={user.coverImageUrl && user.coverImageUrl !== "cover.png" ? user.coverImageUrl : coverImage.src}
+                            src={user?.coverImageUrl && user.coverImageUrl !== "cover.png" ? user.coverImageUrl : coverImage.src}
                             alt='Cover Photo'
                             className='object-cover w-full h-full absolute inset-0'
                         />
@@ -145,7 +158,7 @@ const MyProfile = () => {
                             {/* Profile Picture and Upload Button */}
                             <div className='relative w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-white shadow-xl group'>
                                 <img
-                                    src={user.profileImageUrl && user.profileImageUrl !== "profile.png" ? user.profileImageUrl : DummyImage.src}
+                                    src={user?.profileImageUrl && user.profileImageUrl !== "profile.png" ? user.profileImageUrl : DummyImage.src}
                                     alt='Profile Picture'
                                     className='object-cover w-full h-full rounded-full'
                                 />
@@ -169,7 +182,7 @@ const MyProfile = () => {
                             {/* Name and Role */}
                             <div className='mt-2 sm:mt-0 sm:ml-6 text-left w-full'>
                                 <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
-                                    {user.firstName} {user.lastName}
+                                    {user?.firstName} {user?.lastName}
                                 </h1>
                             </div>
                         </div>
@@ -181,16 +194,17 @@ const MyProfile = () => {
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-w-4xl'>
 
                                 {/* First Name */}
-                                {renderInput('firstName', 'First Name', 'text', user.firstName ?? '', handleChange)}
+                                {renderInput('firstName', 'First Name', 'text', user?.firstName ?? '', handleChange, false, validationErrors?.firstName)}
 
                                 {/* Last Name */}
-                                {renderInput('lastName', 'Last Name', 'text', user.lastName ?? '', handleChange)}
+                                {renderInput('lastName', 'Last Name', 'text', user?.lastName ?? '', handleChange, false, validationErrors?.lastName)
+                                }
 
                                 {/* Email */}
-                                {renderInput('email', 'Email Address (Read Only)', 'email', user.email ?? '', handleChange, true)}
+                                {renderInput('email', 'Email Address (Read Only)', 'email', user?.email ?? '', handleChange, true)}
 
                                 {/* Contact Number */}
-                                {renderInput('contactNumber', 'Contact Number', 'tel', user.contactNumber ?? '', handleChange)}
+                                {renderInput('contactNumber', 'Contact Number', 'tel', user?.contactNumber ?? '', handleChange, false, validationErrors?.contactNumber)}
 
                             </div>
                         </div>
@@ -217,7 +231,7 @@ const MyProfile = () => {
                     onClose={() => setIsModalOpen(false)} 
                     onConfirm={handleConfirmAction}
                     title="Are You Sure?"
-                    message="This is a test message to ensure the modal renders correctly over the whole page."
+                    message="After Conform This,  Your Personal Data Update."
                 />
         </>
 
@@ -230,7 +244,8 @@ const renderInput = (
     type: string,
     value: string,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    readOnly: boolean = false
+    readOnly: boolean = false,
+    validationErrors: string | null = null
 ) => (
     <div className='flex flex-col gap-y-1'>
         <label
@@ -261,6 +276,11 @@ const renderInput = (
                 }
             `}
         />
+
+        {
+            validationErrors &&
+              <span className='text-red-600 text-sm font-medium'>{validationErrors}</span>
+        }
     </div>
 );
 

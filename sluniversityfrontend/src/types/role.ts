@@ -1,3 +1,4 @@
+"use client";
 type Permission = {
     id:number,
     name:string

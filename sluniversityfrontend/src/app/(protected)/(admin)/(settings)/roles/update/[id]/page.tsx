@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import api from '@/app/lib/api';
 import TextFormInput from '@/components/Ui/Form/TextFormInput';
 import React, { useEffect, useState } from 'react'

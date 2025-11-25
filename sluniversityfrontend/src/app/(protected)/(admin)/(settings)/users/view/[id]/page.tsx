@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import api from '@/app/lib/api';
 import SomeWrong from '@/components/Ui/Helper/SomeWrong';
 import Link from 'next/link';

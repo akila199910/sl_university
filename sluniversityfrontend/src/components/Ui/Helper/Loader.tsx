@@ -1,3 +1,4 @@
+"use client";
 import React from 'react'
 import LoaderBlaclIcon from '../../../../public/loader-black.svg'
 import LoaderWhiteIcon from '../../../../public/loader-white.svg'

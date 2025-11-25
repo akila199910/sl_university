@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import api from '@/app/lib/api';
 import MultiSelectDropdown from '@/components/Ui/Form/MultiSelectDropdown';
 import DropDown from '@/components/Ui/Form/MultiSelectDropdown';

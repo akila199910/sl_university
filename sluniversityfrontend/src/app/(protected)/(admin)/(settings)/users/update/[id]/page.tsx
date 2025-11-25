@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import api from '@/app/lib/api';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
