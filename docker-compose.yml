@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # -----------------------------
+  # MySQL Database
+  # -----------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: sl-university-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: sl_university_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    networks:
+      - appnet
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------
+  # Spring Boot Backend
+  # -----------------------------
+  backend:
+    build:
+      context: ./SlUniversityBackend
+      dockerfile: Dockerfile
+    container_name: sl-university-backend
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sl_university_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: app_user
+      SPRING_DATASOURCE_PASSWORD: app_password
+
+      FRONTEND_URL: http://localhost:3000
+      BASE_URL: http://localhost:8080/api
+
+      JWT_SECRET: 9887647853bjfd63kkjs7653bjhd6tekujsisu9i9u82tygew78832ieohu387tydvdskeu9irih47y348ouporj93u48yuobf3lkod4e
+      JWT_ACCESS_MS: 86400000
+      JWT_REFRESH_MS: 1209600000
+
+      PORT: 8080
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    networks:
+      - appnet
+
+  # -----------------------------
+  # Next.js Frontend
+  # -----------------------------
+  frontend:
+    build:
+      context: ./sluniversityfrontend
+      dockerfile: Dockerfile
+    container_name: sl-university-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      NODE_ENV: production
+      Session_MAX_Age: 3600000
+    depends_on:
+      - backend
+    networks:
+      - appnet
+
+# -----------------------------
+# Volumes & Networks
+# -----------------------------
+volumes:
+  db-data:
+
+networks:
+  appnet:
+    driver: bridge
