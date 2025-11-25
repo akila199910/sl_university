@@ -48,7 +48,7 @@ public class User {
 
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "profile_id", referencedColumnName = "id", nullable = true)
+    @JoinColumn(name = "profile_id", referencedColumnName = "id")
     private UserProfile profile;
 
     private LocalDateTime createdAt;

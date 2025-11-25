@@ -13,6 +13,9 @@ public class MyProfileDTO {
     private Integer id;
     private String email;
     private String name;
+    private String firstName;
+    private String lastName;
+    private String contactNumber;
     private List<RoleDTO> roles;
     private String profileImageUrl;
     private String coverImageUrl;

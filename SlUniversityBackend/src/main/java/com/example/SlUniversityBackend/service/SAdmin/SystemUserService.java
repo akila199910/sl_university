@@ -89,10 +89,8 @@ public class SystemUserService {
             );
         } else if (hasRole) {
 
-            users = userRepository.findByRoles(
-                    Optional.of(specificRole),
-                    pageable
-            );
+            users = userRepository.findByRoles(specificRole, pageable);
+
         } else {
             users = userRepository.findAll(pageable);
         }
@@ -168,7 +166,7 @@ public class SystemUserService {
         UserProfile userProfile = new UserProfile();
         userProfile.setProfileUrl("profile.png");
         userProfile.setCoverUrl("cover.png");
-        userProfileRepository.save(userProfile);
+//        userProfileRepository.save(userProfile);
 
         User user = new User();
         user.setFirstName(systemUserCreateDTO.getFirstName());

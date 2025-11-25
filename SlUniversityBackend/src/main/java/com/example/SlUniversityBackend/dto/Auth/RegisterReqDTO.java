@@ -26,7 +26,7 @@ public class RegisterReqDTO {
 
     @NotEmpty(message="Contact number is required.")
     @NumberFormat(style = NUMBER)
-    @Size(max = 15, message = "Contact number should be less than 30 characters.")
+    @Size(max = 15, message = "Contact number should be less than 15 characters.")
     private String contactNumber;
 
     @NotEmpty(message = "Password is required.")
