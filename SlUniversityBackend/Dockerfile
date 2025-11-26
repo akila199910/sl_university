@@ -1,29 +1,23 @@
-# Stage 1 — Build the JAR
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-
+# Stage 1: Build (Optimized for Cache)
+FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
 
-# Copy Maven files first (layer caching)
-COPY pom.xml ./
-COPY mvnw ./
+# 1. Copy only maven files first
+COPY mvnw .
 COPY .mvn .mvn
+COPY pom.xml .
 
+# 2. Download dependencies (Cached layer)
 RUN ./mvnw dependency:go-offline
 
-# Copy source code
+# 3. Copy source and build
 COPY src ./src
-
-# Build JAR (skip tests to speed up; remove -DskipTests for CI)
 RUN ./mvnw -DskipTests package
 
-# Stage 2 — Run the application
-FROM eclipse-temurin:17-jdk-jammy
-
+# Stage 2: Run (Optimized for Size)
+# Use JRE instead of JDK
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-
 COPY --from=build /app/target/*.jar app.jar
-
-# Expose backend port
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]

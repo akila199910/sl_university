@@ -6,14 +6,15 @@ services:
   # -----------------------------
   mysql:
     image: mysql:8.0
-    container_name: sl-university-mysql
+    container_name: databse_container
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS} # Read from .env
       MYSQL_DATABASE: sl_university_db
       MYSQL_USER: app_user
-      MYSQL_PASSWORD: app_password
-    ports:
-      - "3306:3306"
+      MYSQL_PASSWORD: ${DB_APP_PASS}       # Read from .env
+    # For security, we usually DON'T expose 3306 on prod unless you need to access DB from your laptop
+    # ports:
+    #   - "3306:3306"
     networks:
       - appnet
     volumes:
@@ -37,18 +38,18 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      # Keep 'mysql' here because this happens INSIDE the docker network
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sl_university_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: app_user
-      SPRING_DATASOURCE_PASSWORD: app_password
+      SPRING_DATASOURCE_PASSWORD: ${DB_APP_PASS}
 
-      FRONTEND_URL: http://localhost:3000
+      # CORS: Allow the public IP to access this
+      FRONTEND_URL: http://${EC2_PUBLIC_IP}:3000
       BASE_URL: http://localhost:8080/api
 
-      JWT_SECRET: 9887647853bjfd63kkjs7653bjhd6tekujsisu9i9u82tygew78832ieohu387tydvdskeu9irih47y348ouporj93u48yuobf3lkod4e
+      JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_MS: 86400000
       JWT_REFRESH_MS: 1209600000
-
-      PORT: 8080
       SPRING_PROFILES_ACTIVE: prod
     ports:
       - "8080:8080"
@@ -67,17 +68,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      # CRITICAL CHANGE: This must be the Public IP for the browser to find the backend
+      NEXT_PUBLIC_API_URL: http://${EC2_PUBLIC_IP}:8080/api
       NODE_ENV: production
-      Session_MAX_Age: 3600000
     depends_on:
       - backend
     networks:
       - appnet
 
-# -----------------------------
-# Volumes & Networks
-# -----------------------------
 volumes:
   db-data:
 
