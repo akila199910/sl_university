@@ -5,10 +5,12 @@ WORKDIR /app
 # 1. Copy only maven files first
 COPY mvnw .
 COPY .mvn .mvn
+
+RUN chmod +x mvnw
+
 COPY pom.xml .
 
 # 2. Download dependencies (Cached layer)
-RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline
 
 # 3. Copy source and build
