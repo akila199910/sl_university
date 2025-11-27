@@ -1,29 +1,48 @@
-# Stage 1 — Build the JAR
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-
+# ============================
+# Stage 1: Build (Optimized)
+# ============================
+FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
 
-# Copy Maven files first (layer caching)
-COPY pom.xml ./
-COPY mvnw ./
+# Fix SSL handshake issues by installing CA certificates
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
+
+# ------------------------
+# 1. Copy Maven wrapper
+# ------------------------
+COPY mvnw .
 COPY .mvn .mvn
+RUN chmod +x mvnw
 
-RUN ./mvnw dependency:go-offline
+# ------------------------
+# 2. Copy pom.xml only
+#    -> This allows Docker to cache dependencies
+# ------------------------
+COPY pom.xml .
 
-# Copy source code
+# Pre-download dependencies with retry protection
+RUN ./mvnw dependency:go-offline \
+    -Dmaven.wagon.http.retryHandler.count=5 \
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=30
+
+# ------------------------
+# 3. Copy source and build
+# ------------------------
 COPY src ./src
 
-# Build JAR (skip tests to speed up; remove -DskipTests for CI)
-RUN ./mvnw -DskipTests package
+RUN ./mvnw -DskipTests \
+    -Dmaven.wagon.http.retryHandler.count=5 \
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=30 \
+    package
 
-# Stage 2 — Run the application
-FROM eclipse-temurin:17-jdk-jammy
-
+# ============================
+# Stage 2: Runtime (Light)
+# ============================
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose backend port
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

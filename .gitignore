@@ -1,0 +1,16 @@
+# Backend Ignored
+target/
+!.mvn/wrapper/maven-wrapper.properties
+.mvn/
+
+# Frontend Ignored
+node_modules/
+.next/
+build/
+dist/
+
+# System/IDE Ignored
+.DS_Store
+.idea/
+.vscode/
+.env
