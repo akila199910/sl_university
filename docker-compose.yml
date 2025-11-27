@@ -11,6 +11,11 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - appnet
+    healthcheck:
+    test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    interval: 10s
+    timeout: 5s
+    retries: 10
 
   backend:
     image: akila99/sl-university-backend:latest
@@ -26,7 +31,8 @@ services:
       JWT_ACCESS_MS: 86400000
       JWT_REFRESH_MS: 1209600000
     depends_on:
-      - mysql
+      - mysql:
+          condition: service_healthy
     ports:
       - "8080:8080"
     networks:
