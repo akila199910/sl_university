@@ -25,8 +25,6 @@ export default function LoginPage() {
 
       await login(form);
       router.push("/dashboard");
-      console.log("Logged in user:", user);
-
     }
     catch (err: any) {
       console.log(err);
