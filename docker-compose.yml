@@ -13,7 +13,7 @@ services:
       - appnet
 
   backend:
-    image: akila27454/sl-university-backend:latest
+    image: akila99/sl-university-backend:latest
     container_name: sl-university-backend
     restart: always
     environment:
@@ -33,7 +33,7 @@ services:
       - appnet
 
   frontend:
-    image: akila27454/sl-university-frontend:latest
+    image: akila99/sl-university-frontend:latest
     container_name: sl-university-frontend
     restart: always
     environment:
