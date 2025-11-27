@@ -28,7 +28,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: http://${EC2_PUBLIC_IP}:3000
       BASE_URL: http://${EC2_PUBLIC_IP}:8080/api
-      JWT_ACCESS_MS: 86400000
+      JWT_ACCESS_MS: 8640000
       JWT_REFRESH_MS: 1209600000
     depends_on:
       - mysql
