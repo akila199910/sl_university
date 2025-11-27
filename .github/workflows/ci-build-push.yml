@@ -32,5 +32,7 @@ jobs:
         with:
           context: ./sluniversityfrontend
           push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://47.129.150.222:8080/api
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/sl-university-frontend:latest
